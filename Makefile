@@ -1,5 +1,11 @@
 install:
-	python3 -m venv venv-jit
+	@if ! command -v python3 >/dev/null 2>&1; then \
+		echo "Python 3 is required but it's not installed. Please install Python 3 and try again." >&2; \
+		exit 1; \
+	fi
+	@if [ ! -d "venv-jit" ]; then \
+		python3 -m venv venv-jit; \
+	fi
 	source venv-jit/bin/activate && pip install -r requirements.txt
 
 config:
