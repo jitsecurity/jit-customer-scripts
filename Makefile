@@ -8,11 +8,11 @@ install:
 	fi
 	source venv-jit/bin/activate && pip install -r requirements.txt
 
-config:
+configure:
 	@read -p "Enter GitHub organization name: " org_name; \
-	read -p "Enter API client ID: " client_id; \
-	read -p "Enter API client secret: " client_secret; \
-	read -p "Enter GitHub token: " github_token; \
+	read -p "Enter JIT API client ID: " client_id; \
+	read -p "Enter JIT API client secret: " client_secret; \
+	read -p "Enter GitHub Personal token (PAT): " github_token; \
 	echo "ORGANIZATION_NAME=$$org_name" > .env; \
 	echo "JIT_CLIENT_ID=$$client_id" >> .env; \
 	echo "JIT_CLIENT_SECRET=$$client_secret" >> .env; \
