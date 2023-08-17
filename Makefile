@@ -20,3 +20,12 @@ configure:
 
 run:
 	source venv-jit/bin/activate && python main.py
+
+help:
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@echo "  install   Install dependencies"
+	@echo "  configure Configure environment variables"
+	@echo "  run       Run the main script"
+	@echo "  help      Show this help message"
