@@ -11,7 +11,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")
-FRONTEGG_AUTH_URL = "https://jit-cto.frontegg.com/identity/resources/auth/v1/api-token"
+FRONTEGG_AUTH_URL = os.getenv("FRONTEGG_AUTH_URL", "https://jit.frontegg.com/identity/resources/auth/v1/api-token")
 GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
 JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
