@@ -35,7 +35,7 @@ Before running the script, you need to configure the necessary environment varia
 1. Run the configuration command:
 
    ```shell
-   make config
+   make configure
    ```
 
 2. Enter the required information when prompted:
