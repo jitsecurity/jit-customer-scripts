@@ -24,48 +24,57 @@ class Repository(BaseModel):
 
 
 def get_teams():
-    # Create a GitHub instance using the token
-    github = Github(GITHUB_TOKEN)
+    try:
+        # Create a GitHub instance using the token
+        github = Github(GITHUB_TOKEN)
 
-    # Get the organization
-    organization = github.get_organization(ORGANIZATION_NAME)
+        # Get the organization
+        organization = github.get_organization(ORGANIZATION_NAME)
 
-    # List to store repository details
-    repositories = []
+        # List to store repository details
+        repositories = []
 
-    # Iterate over repositories in the organization
-    for repo in organization.get_repos():
-        # Get the repository name
-        repo_name = repo.name
+        # Iterate over repositories in the organization
+        for repo in organization.get_repos():
+            # Get the repository name
+            repo_name = repo.name
 
-        # Get the repository topics
-        topics = repo.get_topics()
+            # Get the repository topics
+            topics = repo.get_topics()
 
-        # Create a Repository instance with repository details
-        repo_details = Repository(name=repo_name, topics=topics)
+            # Create a Repository instance with repository details
+            repo_details = Repository(name=repo_name, topics=topics)
 
-        # Add repository details to the list
-        repositories.append(repo_details)
+            # Add repository details to the list
+            repositories.append(repo_details)
 
-    return repositories
+        return repositories
+    except Exception as e:
+        print(f"Failed to retrieve teams: {str(e)}")
+        return None
 
 
-def list_assets():
-    # Make a GET request to the asset API
-    url = f"{JIT_API_ENDPOINT}/asset"
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-    response = requests.get(url, headers=headers)
+def list_assets(token):
+    try:
+        # Make a GET request to the asset API
+        url = f"{JIT_API_ENDPOINT}/asset"
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+        response = requests.get(url, headers=headers)
 
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Parse the response JSON
-        assets = response.json()
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Parse the response JSON
+            assets = response.json()
 
-        return assets
-
-    return None
+            return assets
+        else:
+            print(f"Failed to retrieve assets. Status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Failed to retrieve assets: {str(e)}")
+        return None
 
 
 def get_jwt_token():
@@ -79,23 +88,41 @@ def get_jwt_token():
     }
 
     response = requests.post(FRONTEGG_AUTH_URL, json=payload, headers=headers)
-    return response.json()['accessToken']
+
+    if response.status_code == 200:
+        return response.json().get('accessToken')
+    else:
+        print(f"Failed to retrieve JWT token. Status code: {response.status_code}")
+        return None
 
 
-if __name__ == '__main__':
+def main():
     token = get_jwt_token()
+    if not token:
+        print("Failed to retrieve JWT token. Exiting...")
+        exit(-1)
 
     # Call the get_teams function
     teams = get_teams()
+    if not teams:
+        print("Failed to retrieve Teams. Exiting...")
+        exit(-1)
 
     # Convert the list to JSON format
-    json_data = json.dumps([t.model_dump() for t in teams], indent=4)
+    json_data = json.dumps([t.model_dump() for t in teams], indent=2)
 
     # Print the JSON data
     print(json_data)
 
     # Call the list_assets function
-    assets = list_assets()
+    assets = list_assets(token)
+    if not assets:
+        print("Failed to retrieve assets. Exiting...")
+        exit(-1)
 
     # Print the assets
     print(assets)
+
+
+if __name__ == '__main__':
+    main()
