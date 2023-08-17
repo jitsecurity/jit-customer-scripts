@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 from typing import List
@@ -23,7 +24,7 @@ class Repository(BaseModel):
     topics: List[str]
 
 
-def get_teams():
+def get_topics_for_teams():
     try:
         # Create a GitHub instance using the token
         github = Github(GITHUB_TOKEN)
@@ -97,16 +98,37 @@ def get_jwt_token():
 
 
 def main():
-    token = get_jwt_token()
-    if not token:
-        print("Failed to retrieve JWT token. Exiting...")
-        exit(-1)
+    # Create the argument parser
+    parser = argparse.ArgumentParser(description="Retrieve teams and assets")
 
-    # Call the get_teams function
-    teams = get_teams()
-    if not teams:
-        print("Failed to retrieve Teams. Exiting...")
-        exit(-1)
+    # Add the --input argument
+    parser.add_argument("--input", help="Path to a JSON file")
+
+    # Parse the command line arguments
+    args = parser.parse_args()
+
+    # Check if the --input argument is provided
+    if args.input:
+        # Check if the file exists and is a JSON file
+        if not os.path.isfile(args.input):
+            print("Error: File does not exist.")
+            return
+        if not args.input.endswith(".json"):
+            print("Error: File is not a JSON file.")
+            return
+
+        # Read the JSON file
+        with open(args.input, "r") as file:
+            json_data = file.read()
+
+        # Parse the JSON data
+        teams = json.loads(json_data)
+    else:
+        # Call the get_teams function
+        teams = get_topics_for_teams()
+        if not teams:
+            print("Failed to retrieve Teams. Exiting...")
+            return
 
     # Convert the list to JSON format
     json_data = json.dumps([t.model_dump() for t in teams], indent=2)
@@ -115,10 +137,15 @@ def main():
     print(json_data)
 
     # Call the list_assets function
+    token = get_jwt_token()
+    if not token:
+        print("Failed to retrieve JWT token. Exiting...")
+        return
+
     assets = list_assets(token)
     if not assets:
         print("Failed to retrieve assets. Exiting...")
-        exit(-1)
+        return
 
     # Print the assets
     print(assets)
