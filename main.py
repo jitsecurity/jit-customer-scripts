@@ -12,6 +12,7 @@ load_dotenv()
 
 ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")
 FRONTEGG_AUTH_URL = os.getenv("FRONTEGG_AUTH_URL", "https://jit.frontegg.com/identity/resources/auth/v1/api-token")
+JIT_API_ENDPOINT = os.getenv("JIT_API_ENDPOINT", "https://api.jit.io")
 GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
 JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
@@ -51,7 +52,7 @@ def get_teams():
 
 def list_assets():
     # Make a GET request to the asset API
-    url = "https://api.cto.jitdev.io/asset"
+    url = f"{JIT_API_ENDPOINT}/asset"
     headers = {
         "Authorization": f"Bearer {token}"
     }
