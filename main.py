@@ -6,7 +6,7 @@ from typing import List
 import requests
 from dotenv import load_dotenv
 from github import Github
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 # Load environment variables from .env file
 load_dotenv()
@@ -19,7 +19,7 @@ JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
 JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
 
 
-class Repository(BaseModel):
+class RepositoryDetails(BaseModel):
     name: str
     topics: List[str]
 
@@ -44,7 +44,7 @@ def get_topics_for_teams():
             topics = repo.get_topics()
 
             # Create a Repository instance with repository details
-            repo_details = Repository(name=repo_name, topics=topics)
+            repo_details = RepositoryDetails(name=repo_name, topics=topics)
 
             # Add repository details to the list
             repositories.append(repo_details)
@@ -122,7 +122,11 @@ def main():
             json_data = file.read()
 
         # Parse the JSON data
-        teams = json.loads(json_data)
+        try:
+            teams = [RepositoryDetails(**team) for team in json.loads(json_data)]
+        except ValidationError as e:
+            print(f"Failed to validate input file: {e}")
+            return
     else:
         # Call the get_teams function
         teams = get_topics_for_teams()
