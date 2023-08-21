@@ -6,6 +6,7 @@ from typing import List, Optional
 import requests
 from dotenv import load_dotenv
 from github import Github
+from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 # Load environment variables from .env file
@@ -83,7 +84,7 @@ def get_repos_from_github() -> Optional[List[RepositoryDetails]]:
 
         return repositories
     except Exception as e:
-        print(f"Failed to retrieve teams: {str(e)}")
+        logger.error(f"Failed to retrieve teams: {str(e)}")
         return None
 
 
@@ -103,10 +104,10 @@ def list_assets(token: str) -> List[Asset]:
 
             return [Asset(**asset) for asset in assets]
         else:
-            print(f"Failed to retrieve assets. Status code: {response.status_code}")
+            logger.error(f"Failed to retrieve assets. Status code: {response.status_code}")
             return []
     except Exception as e:
-        print(f"Failed to retrieve assets: {str(e)}")
+        logger.error(f"Failed to retrieve assets: {str(e)}")
         return []
 
 
@@ -125,7 +126,7 @@ def get_jwt_token() -> Optional[str]:
     if response.status_code == 200:
         return response.json().get('accessToken')
     else:
-        print(f"Failed to retrieve JWT token. Status code: {response.status_code}")
+        logger.error(f"Failed to retrieve JWT token. Status code: {response.status_code}")
         return None
 
 
@@ -154,15 +155,15 @@ def get_existing_teams(token: str) -> List[BaseTeam]:
                 if response.status_code == 200:
                     after = _handle_resoponse(response, existing_teams)
                 else:
-                    print(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+                    logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                     return []
 
             return [BaseTeam(**team) for team in existing_teams]
         else:
-            print(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+            logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
             return []
     except Exception as e:
-        print(f"Failed to retrieve teams: {str(e)}")
+        logger.error(f"Failed to retrieve teams: {str(e)}")
         return []
 
 
@@ -180,10 +181,9 @@ def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) 
 
 def create_teams(token, teams_to_create):
     try:
-        url = f"{JIT_API_ENDPOINT}/teams"
+        url = f"{JIT_API_ENDPOINT}/teams/"
         headers = {
             "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
         }
         for team_name in teams_to_create:
             payload = {
@@ -191,11 +191,12 @@ def create_teams(token, teams_to_create):
             }
             response = requests.post(url, json=payload, headers=headers)
             if response.status_code == 201:
-                print(f"Team '{team_name}' created successfully.")
+                logger.info(f"Team '{team_name}' created successfully.")
             else:
-                print(f"Failed to create team '{team_name}'. Status code: {response.status_code}, {response.text}")
+                logger.error(
+                    f"Failed to create team '{team_name}'. Status code: {response.status_code}, {response.text}")
     except Exception as e:
-        print(f"Failed to create teams: {str(e)}")
+        logger.error(f"Failed to create teams: {str(e)}")
 
 
 def main():
@@ -210,17 +211,17 @@ def main():
 
     token = get_jwt_token()
     if not token:
-        print("Failed to retrieve JWT token. Exiting...")
+        logger.error("Failed to retrieve JWT token. Exiting...")
         return
 
     # Check if the --input argument is provided
     if args.input:
         # Check if the file exists and is a JSON file
         if not os.path.isfile(args.input):
-            print("Error: File does not exist.")
+            logger.error("Error: File does not exist.")
             return
         if not args.input.endswith(".json"):
-            print("Error: File is not a JSON file.")
+            logger.error("Error: File is not a JSON file.")
             return
 
         # Read the JSON file
@@ -231,13 +232,13 @@ def main():
         try:
             repos = [RepositoryDetails(**team) for team in json.loads(json_data)]
         except ValidationError as e:
-            print(f"Failed to validate input file: {e}")
+            logger.error(f"Failed to validate input file: {e}")
             return
     else:
         # Call the get_teams function
         repos = get_repos_from_github()
         if not repos:
-            print("Failed to retrieve topics. Exiting...")
+            logger.error("Failed to retrieve topics. Exiting...")
             return
 
     topic_names = []
@@ -249,17 +250,18 @@ def main():
 
     teams_to_create = get_teams_to_create(topic_names, existing_team_names)
     teams_to_delete = get_teams_to_delete(topic_names, existing_team_names)
-    
+
     create_teams(token, teams_to_create)
 
     assets: List[Asset] = list_assets(token)
     if not assets:
-        print("Failed to retrieve assets. Exiting...")
+        logger.error("Failed to retrieve assets. Exiting...")
         return
 
     # Print the assets
-    print(assets)
+    logger.info(assets)
 
 
 if __name__ == '__main__':
+    logger.add("app.log", rotation="500 MB", level="INFO")
     main()
