@@ -86,9 +86,6 @@ def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
     return asset_to_team_map
 
 
-
-
-
 def main():
     token = get_jwt_token()
     if not token:

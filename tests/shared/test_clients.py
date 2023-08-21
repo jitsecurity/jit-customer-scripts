@@ -67,23 +67,6 @@ def test_get_teams_from_github_topics_exception(mocker):
     assert result == Organization(teams=[])
 
 
-def test_delete_teams(mocker):
-    mock_responses = [mocker.MagicMock(status_code=204), mocker.MagicMock(status_code=404)]
-    mocker.patch("requests.delete", side_effect=mock_responses)
-    mock_logger_info = mocker.patch("loguru.logger.info")
-    mock_logger_error = mocker.patch("loguru.logger.error")
-    mock_logger_warning = mocker.patch("loguru.logger.warning")
-
-    token = "test_token"
-    team_names = ["team1", "team2"]
-
-    delete_teams(token, team_names)
-
-    mock_logger_info.assert_called_once_with("Team 'team1' deleted successfully.")
-    mock_logger_error.assert_called_once_with("Failed to delete team 'team2'. Status code: 404, {}")
-    mock_logger_warning.assert_called_once_with("Team 'team2' not found.")
-
-
 @pytest.mark.parametrize(
     "status_code, expected_result",
     [
@@ -204,3 +187,38 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
         mock_logger_info.assert_called_once_with("Teams added to asset 'asset_id' successfully.")
     else:
         mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
+
+
+@pytest.mark.parametrize(
+    "status_code, expected_result",
+    [
+        (204, "Team 'team1' deleted successfully."),
+        (404, "Failed to delete team 'team2'. Status code: 404, {}"),
+    ]
+)
+def test_delete_teams(mocker, status_code, expected_result):
+    mock_existing_teams = [
+        BaseTeam(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="team1"),
+        BaseTeam(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="team2")
+    ]
+    mocker.patch("src.shared.clients.jit.get_existing_teams", return_value=mock_existing_teams)
+    mock_responses = [mocker.MagicMock(status_code=status_code) for _ in range(2)]
+    mocker.patch("requests.delete", side_effect=mock_responses)
+    mock_logger_info = mocker.patch("loguru.logger.info")
+    mock_logger_error = mocker.patch("loguru.logger.error")
+    mock_logger_warning = mocker.patch("loguru.logger.warning")
+
+    token = "test_token"
+    team_names = ["team1", "team2"]
+
+    delete_teams(token, team_names)
+
+    mock_logger_info.assert_called_once_with(expected_result.format(""))
+    if status_code == 404:
+        mock_logger_error.assert_called_once_with(expected_result.format(""))
+    else:
+        mock_logger_error.assert_not_called()
+    if status_code == 404:
+        mock_logger_warning.assert_called_once_with("Team 'team2' not found.")
+    else:
+        mock_logger_warning.assert_not_called()
