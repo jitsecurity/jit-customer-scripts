@@ -73,6 +73,31 @@ def get_existing_teams(token: str) -> List[BaseTeam]:
         return []
 
 
+def delete_teams(token, team_names):
+    existing_teams: List[BaseTeam] = get_existing_teams(token)
+
+    for team_name in team_names:
+        team_id = None
+        for team in existing_teams:
+            if team.name == team_name:
+                team_id = team.id
+                break
+
+        if team_id:
+            url = f"{JIT_API_ENDPOINT}/teams/{team_id}"
+            headers = {"Authorization": f"Bearer {token}"}
+
+            response = requests.delete(url, headers=headers)
+
+            if response.status_code == 204:
+                logger.info(f"Team '{team_name}' deleted successfully.")
+            else:
+                logger.error(
+                    f"Failed to delete team '{team_name}'. Status code: {response.status_code}, {response.text}")
+        else:
+            logger.warning(f"Team '{team_name}' not found.")
+
+
 def create_teams(token, teams_to_create):
     try:
         url = f"{JIT_API_ENDPOINT}/teams/"

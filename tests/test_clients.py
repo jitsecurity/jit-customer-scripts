@@ -2,7 +2,7 @@ import pytest
 
 from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
-from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset
+from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams
 from src.shared.models import BaseTeam, Asset, Organization, TeamTemplate, Resource
 
 
@@ -65,6 +65,23 @@ def test_get_teams_from_github_topics_exception(mocker):
     # Test that the function logs an error and returns None
     result = get_teams_from_github_topics()
     assert result == Organization(teams=[])
+
+
+def test_delete_teams(mocker):
+    mock_responses = [mocker.MagicMock(status_code=204), mocker.MagicMock(status_code=404)]
+    mocker.patch("requests.delete", side_effect=mock_responses)
+    mock_logger_info = mocker.patch("loguru.logger.info")
+    mock_logger_error = mocker.patch("loguru.logger.error")
+    mock_logger_warning = mocker.patch("loguru.logger.warning")
+
+    token = "test_token"
+    team_names = ["team1", "team2"]
+
+    delete_teams(token, team_names)
+
+    mock_logger_info.assert_called_once_with("Team 'team1' deleted successfully.")
+    mock_logger_error.assert_called_once_with("Failed to delete team 'team2'. Status code: 404, {}")
+    mock_logger_warning.assert_called_once_with("Team 'team2' not found.")
 
 
 @pytest.mark.parametrize(

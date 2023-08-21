@@ -9,7 +9,7 @@ from loguru import logger
 from pydantic import ValidationError
 
 from src.shared.clients.frontegg import get_jwt_token
-from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset
+from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams
 from src.shared.diff_tools import get_teams_to_create, get_teams_to_delete
 from src.shared.models import Asset, BaseTeam, Organization, TeamTemplate
 
@@ -86,6 +86,9 @@ def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
     return asset_to_team_map
 
 
+
+
+
 def main():
     token = get_jwt_token()
     if not token:
@@ -102,6 +105,8 @@ def main():
         print(teams_to_delete)
 
     update_assets(token, organization)
+
+    delete_teams(token, teams_to_delete)
 
 
 if __name__ == '__main__':
