@@ -14,7 +14,7 @@ ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")
 GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 
 
-def get_teams_from_github_topics() -> dict:
+def get_teams_from_github_topics() -> TeamStructure:
     try:
         # Create a GitHub instance using the token
         github = Github(GITHUB_TOKEN)
@@ -49,7 +49,7 @@ def get_teams_from_github_topics() -> dict:
                 # Add the team template to the teams dictionary
                 teams[topic] = team_template
 
-        return {"teams": list([t.model_dump() for t in teams.values()])}
+        return TeamStructure(teams=list(teams.values()))
     except Exception as e:
         logger.error(f"Failed to retrieve teams: {str(e)}")
-        return {"teams": []}
+        return TeamStructure(teams=[])

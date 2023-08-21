@@ -46,3 +46,7 @@ class TeamTemplate(BaseModel):
     name: str
     members: List[str] = []
     resources: List[Resource] = []
+
+
+class TeamStructure(BaseModel):
+    teams: List[TeamTemplate]
