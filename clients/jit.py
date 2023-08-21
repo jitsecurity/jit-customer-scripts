@@ -110,4 +110,3 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
                          f"{response.status_code}, {response.text}")
     except Exception as e:
         logger.error(f"Failed to add teams to asset: {str(e)}")
-

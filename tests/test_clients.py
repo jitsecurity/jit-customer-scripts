@@ -104,9 +104,9 @@ def test_list_assets(mocker, status_code, response_data, expected_assets):
     [
         ([200, 200], [{"data": [
             {"tenant_id": "tenant1", "id": "1", "created_at": "date1", "modified_at": "date2", "name": "name1"}],
-                       "metadata": {"after": "some_value"}}, {"data": [
+            "metadata": {"after": "some_value"}}, {"data": [
             {"tenant_id": "tenant2", "id": "2", "created_at": "date3", "modified_at": "date4", "name": "name2"}],
-                                                              "metadata": {"after": None}}],
+            "metadata": {"after": None}}],
          [BaseTeam(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
           BaseTeam(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
         ([400], [{}], []),
@@ -169,5 +169,3 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
         mock_logger_info.assert_called_once_with("Teams added to asset 'asset_id' successfully.")
     else:
         mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
-
-
