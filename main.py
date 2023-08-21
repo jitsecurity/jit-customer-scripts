@@ -4,7 +4,6 @@ import os
 from typing import List
 
 from dotenv import load_dotenv
-
 from loguru import logger
 from pydantic import ValidationError
 
@@ -16,6 +15,7 @@ from utils import get_teams_to_create, get_teams_to_delete
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv()
+
 
 def main():
     # Create the argument parser
@@ -68,6 +68,7 @@ def main():
 
     teams_to_create = get_teams_to_create(topic_names, existing_team_names)
     teams_to_delete = get_teams_to_delete(topic_names, existing_team_names)
+    print(teams_to_delete)
 
     create_teams(token, teams_to_create)
 
