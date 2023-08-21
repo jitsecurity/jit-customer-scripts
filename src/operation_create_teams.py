@@ -47,11 +47,8 @@ def get_repos() -> List[RepositoryDetails]:
             logger.error(f"Failed to validate input file: {e}")
             return []
     else:
-        # Call the get_teams function
-        repos = get_repos_from_github()
-        if not repos:
-            logger.error("Failed to retrieve topics. Exiting...")
-            return []
+        logger.error("No input file provided.")
+        sys.exit(1)
     return repos
 
 
