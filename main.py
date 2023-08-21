@@ -166,12 +166,16 @@ def get_existing_teams(token: str) -> List[BaseTeam]:
         return []
 
 
+def get_different_items_in_lists(list1: List[str], list2: List[str]) -> List[str]:
+    return list(set(list1) - set(list2))
+
+
 def get_teams_to_create(topic_names: List[str], existing_team_names: List[str]) -> List[str]:
-    return list(set(topic_names) - set(existing_team_names))
+    return get_different_items_in_lists(topic_names, existing_team_names)
 
 
 def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) -> List[str]:
-    return list(set(existing_team_names) - set(topic_names))
+    return get_different_items_in_lists(existing_team_names, topic_names)
 
 
 def main():
@@ -225,8 +229,6 @@ def main():
 
     teams_to_create = get_teams_to_create(topic_names, existing_team_names)
     teams_to_delete = get_teams_to_delete(topic_names, existing_team_names)
-
-
 
     assets: List[Asset] = list_assets(token)
     if not assets:
