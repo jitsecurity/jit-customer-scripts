@@ -17,7 +17,7 @@ from utils import get_teams_to_create, get_teams_to_delete
 load_dotenv()
 
 
-def main():
+def get_repos() -> List[RepositoryDetails]:
     # Create the argument parser
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
 
@@ -27,20 +27,15 @@ def main():
     # Parse the command line arguments
     args = parser.parse_args()
 
-    token = get_jwt_token()
-    if not token:
-        logger.error("Failed to retrieve JWT token. Exiting...")
-        return
-
     # Check if the --input argument is provided
     if args.input:
         # Check if the file exists and is a JSON file
         if not os.path.isfile(args.input):
             logger.error("Error: File does not exist.")
-            return
+            return []
         if not args.input.endswith(".json"):
             logger.error("Error: File is not a JSON file.")
-            return
+            return []
 
         # Read the JSON file
         with open(args.input, "r") as file:
@@ -51,13 +46,25 @@ def main():
             repos = [RepositoryDetails(**team) for team in json.loads(json_data)]
         except ValidationError as e:
             logger.error(f"Failed to validate input file: {e}")
-            return
+            return []
     else:
         # Call the get_teams function
         repos = get_repos_from_github()
         if not repos:
             logger.error("Failed to retrieve topics. Exiting...")
-            return
+            return []
+    return repos
+
+
+def main():
+    token = get_jwt_token()
+    if not token:
+        logger.error("Failed to retrieve JWT token. Exiting...")
+        return
+
+    repos = get_repos()
+    if not repos:
+        return
 
     topic_names = []
     for repo in repos:
@@ -68,9 +75,10 @@ def main():
 
     teams_to_create = get_teams_to_create(topic_names, existing_team_names)
     teams_to_delete = get_teams_to_delete(topic_names, existing_team_names)
-    print(teams_to_delete)
-
-    create_teams(token, teams_to_create)
+    if teams_to_delete:
+        print(teams_to_delete)
+    if teams_to_create:
+        create_teams(token, teams_to_create)
 
     assets: List[Asset] = list_assets(token)
     if not assets:
