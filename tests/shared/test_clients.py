@@ -188,33 +188,41 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
     else:
         mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
 
+
 @pytest.mark.parametrize(
-    "status_code, expected_info, expected_error, expected_warning",
+    "status_code, existing_team_names, input_team_names, expected_info, expected_error, expected_warning",
     [
-        (204, ["Team 'team1' deleted successfully.", "Team 'team2' deleted successfully."], [], []),
-        (404, [], ["Failed to delete team 'team2'. Status code: 404, Error details."], ["Team 'team2' not found."])
+        (204, ["team1", "team2"], ["team1", "team2"],
+         ["Team 'team1' deleted successfully.", "Team 'team2' deleted successfully."], [], []),
+        (404, ["team1", "team2"], ["team1", "team2"], [],
+         ["Failed to delete team 'team2'. Status code: 404, Error details."], []),
+        (204, ["team1"], ["team1", "team2"], ["Team 'team1' deleted successfully."], [], ["Team 'team2' not found."])
     ]
 )
-def test_delete_teams(mocker, status_code, expected_info, expected_error, expected_warning):
+def test_delete_teams(mocker, status_code, existing_team_names, input_team_names, expected_info, expected_error,
+                      expected_warning):
     mock_existing_teams = [
-        BaseTeam(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="team1"),
-        BaseTeam(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="team2")
+        BaseTeam(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
+                 name=team_name)
+        for i, team_name in enumerate(existing_team_names)
     ]
+
     mocker.patch("src.shared.clients.jit.get_existing_teams", return_value=mock_existing_teams)
-    mock_responses = [mocker.MagicMock(status_code=status_code, text="Error details.") for _ in range(2)]
+
+    mock_responses = [mocker.MagicMock(status_code=status_code, text="Error details.") for _ in existing_team_names]
     mocker.patch("requests.delete", side_effect=mock_responses)
+
     mock_logger_info = mocker.patch("loguru.logger.info")
     mock_logger_error = mocker.patch("loguru.logger.error")
     mock_logger_warning = mocker.patch("loguru.logger.warning")
 
     token = "test_token"
-    team_names = ["team1", "team2"]
 
-    delete_teams(token, team_names)
+    delete_teams(token, input_team_names)
 
     for msg in expected_info:
         mock_logger_info.assert_any_call(msg)
     for msg in expected_error:
-        mock_logger_error.assert_any_call(msg.format("Error details"))
+        mock_logger_error.assert_any_call(msg)
     for msg in expected_warning:
         mock_logger_warning.assert_any_call(msg)
