@@ -3,7 +3,7 @@ import pytest
 from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset
-from src.shared.models import RepositoryDetails, BaseTeam, Asset, TeamStructure, TeamTemplate, Resource
+from src.shared.models import BaseTeam, Asset, Organization, TeamTemplate, Resource, AssetToTeamMap
 
 
 class MockRepo:
@@ -18,16 +18,16 @@ class MockRepo:
 @pytest.mark.parametrize(
     "mock_repos, expected_result",
     [
-        ([], TeamStructure(teams=[])),
-        ([MockRepo("repo1", [])], TeamStructure(teams=[])),
+        ([], Organization(teams=[])),
+        ([MockRepo("repo1", [])], Organization(teams=[])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"])],
-         TeamStructure(teams=[
+         Organization(teams=[
              TeamTemplate(name="topic1", members=[], resources=[Resource(type="github_repo", name="repo1")]),
              TeamTemplate(name="topic2", members=[], resources=[Resource(type="github_repo", name="repo2")])
          ])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"]), MockRepo("repo3", ["topic2"]),
           MockRepo("repo4", ["topic1", "topic2"])],
-         TeamStructure(teams=[
+         Organization(teams=[
              TeamTemplate(name="topic1", members=[], resources=[
                  Resource(type="github_repo", name="repo1"),
                  Resource(type="github_repo", name="repo4")
@@ -61,7 +61,7 @@ def test_get_teams_from_github_topics_exception(mocker):
 
     # Test that the function logs an error and returns None
     result = get_teams_from_github_topics()
-    assert result == TeamStructure(teams=[])
+    assert result == Organization(teams=[])
 
 
 @pytest.mark.parametrize(

@@ -5,11 +5,6 @@ from pydantic import BaseModel
 from src.shared.consts import MANUAL_TEAM_SOURCE
 
 
-class RepositoryDetails(BaseModel):
-    name: str
-    topics: List[str]
-
-
 class BaseTeam(BaseModel):
     tenant_id: str
     id: str
@@ -48,5 +43,10 @@ class TeamTemplate(BaseModel):
     resources: List[Resource] = []
 
 
-class TeamStructure(BaseModel):
+class Organization(BaseModel):
     teams: List[TeamTemplate]
+
+
+class AssetToTeamMap(BaseModel):
+    asset_name: str
+    teams: List[str]

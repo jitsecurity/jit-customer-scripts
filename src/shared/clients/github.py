@@ -1,11 +1,10 @@
 import os
-from typing import Optional, List
 
 from dotenv import load_dotenv
 from github import Github
 from loguru import logger
 
-from src.shared.models import TeamTemplate, Resource, TeamStructure
+from src.shared.models import TeamTemplate, Resource, Organization
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv(".env")
@@ -14,7 +13,7 @@ ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")
 GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 
 
-def get_teams_from_github_topics() -> TeamStructure:
+def get_teams_from_github_topics() -> Organization:
     try:
         # Create a GitHub instance using the token
         github = Github(GITHUB_TOKEN)
@@ -43,12 +42,13 @@ def get_teams_from_github_topics() -> TeamStructure:
                     teams[topic].resources.append(Resource(type="github_repo", name=repo_name))
                 else:
                     # Create a new team template for the topic
-                    team_template = TeamTemplate(name=topic, members=[], resources=[Resource(type="github_repo", name=repo_name)])
+                    team_template = TeamTemplate(name=topic, members=[],
+                                                 resources=[Resource(type="github_repo", name=repo_name)])
 
                     # Add the team template to the teams dictionary
                     teams[topic] = team_template
 
-        return TeamStructure(teams=list(teams.values()))
+        return Organization(teams=list(teams.values()))
     except Exception as e:
         logger.error(f"Failed to retrieve teams: {str(e)}")
-        return TeamStructure(teams=[])
+        return Organization(teams=[])
