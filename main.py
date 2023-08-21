@@ -178,6 +178,26 @@ def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) 
     return get_different_items_in_lists(existing_team_names, topic_names)
 
 
+def create_teams(token, teams_to_create):
+    try:
+        url = f"{JIT_API_ENDPOINT}/teams"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        for team_name in teams_to_create:
+            payload = {
+                "name": team_name
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            if response.status_code == 201:
+                print(f"Team '{team_name}' created successfully.")
+            else:
+                print(f"Failed to create team '{team_name}'. Status code: {response.status_code}, {response.text}")
+    except Exception as e:
+        print(f"Failed to create teams: {str(e)}")
+
+
 def main():
     # Create the argument parser
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
@@ -229,6 +249,8 @@ def main():
 
     teams_to_create = get_teams_to_create(topic_names, existing_team_names)
     teams_to_delete = get_teams_to_delete(topic_names, existing_team_names)
+    
+    create_teams(token, teams_to_create)
 
     assets: List[Asset] = list_assets(token)
     if not assets:
