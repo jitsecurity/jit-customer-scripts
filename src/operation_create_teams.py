@@ -8,7 +8,7 @@ from loguru import logger
 from dotenv import load_dotenv
 from pydantic import ValidationError
 from src.shared.clients.frontegg import get_jwt_token
-from src.shared.clients.github import get_repos_from_github
+# from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset
 from src.shared.models import RepositoryDetails, Asset, BaseTeam
 from src.shared.diff_tools import get_teams_to_create, get_teams_to_delete

@@ -35,3 +35,14 @@ class Asset(BaseModel):
     is_archived: Optional[bool] = False
     created_at: str
     modified_at: str
+
+
+class Resource(BaseModel):
+    type: str
+    name: str
+
+
+class TeamTemplate(BaseModel):
+    name: str
+    members: List[str] = []
+    resources: List[Resource] = []

@@ -1,8 +1,8 @@
 import json
 
-from src.shared.clients.github import get_repos_from_github
+from src.shared.clients.github import get_teams_from_github_topics
 
 if __name__ == '__main__':
-    repos = get_repos_from_github()
+    teams = get_teams_from_github_topics()
     with open("repos.json", "w") as file:
-        file.write(json.dumps([repo.model_dump() for repo in repos], indent=2))
+        file.write(json.dumps(teams, indent=2))

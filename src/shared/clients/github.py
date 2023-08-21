@@ -1,11 +1,11 @@
 import os
-from typing import List, Optional
+from typing import Optional, List
 
 from dotenv import load_dotenv
 from github import Github
 from loguru import logger
 
-from src.shared.models import RepositoryDetails
+from src.shared.models import TeamTemplate, Resource
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv(".env")
@@ -14,7 +14,7 @@ ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")
 GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 
 
-def get_repos_from_github() -> Optional[List[RepositoryDetails]]:
+def get_teams_from_github_topics() -> dict:
     try:
         # Create a GitHub instance using the token
         github = Github(GITHUB_TOKEN)
@@ -22,8 +22,8 @@ def get_repos_from_github() -> Optional[List[RepositoryDetails]]:
         # Get the organization
         organization = github.get_organization(ORGANIZATION_NAME)
 
-        # List to store repository details
-        repositories = []
+        # Dictionary to store team templates
+        teams = {}
 
         # Iterate over repositories in the organization
         for repo in organization.get_repos():
@@ -34,13 +34,22 @@ def get_repos_from_github() -> Optional[List[RepositoryDetails]]:
             topics = repo.get_topics()
             if not topics:
                 continue
-            # Create a Repository instance with repository details
-            repo_details = RepositoryDetails(name=repo_name, topics=topics)
 
-            # Add repository details to the list
-            repositories.append(repo_details)
+            # Get the first topic
+            topic = topics[0]
 
-        return repositories
+            # Check if the topic already exists in the teams dictionary
+            if topic in teams:
+                # Add the repository to the existing team
+                teams[topic].resources.append(Resource(type="github_repo", name=repo_name))
+            else:
+                # Create a new team template for the topic
+                team_template = TeamTemplate(name=topic, members=[], resources=[Resource(type="github_repo", name=repo_name)])
+
+                # Add the team template to the teams dictionary
+                teams[topic] = team_template
+
+        return {"teams": list([t.model_dump() for t in teams.values()])}
     except Exception as e:
         logger.error(f"Failed to retrieve teams: {str(e)}")
-        return None
+        return {"teams": []}
