@@ -25,6 +25,19 @@ class MockRepo:
              TeamTemplate(name="topic1", members=[], resources=[Resource(type="github_repo", name="repo1")]),
              TeamTemplate(name="topic2", members=[], resources=[Resource(type="github_repo", name="repo2")])
          ])),
+        ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"]), MockRepo("repo3", ["topic2"]),
+          MockRepo("repo4", ["topic1", "topic2"])],
+         TeamStructure(teams=[
+             TeamTemplate(name="topic1", members=[], resources=[
+                 Resource(type="github_repo", name="repo1"),
+                 Resource(type="github_repo", name="repo4")
+             ]),
+             TeamTemplate(name="topic2", members=[], resources=[
+                 Resource(type="github_repo", name="repo2"),
+                 Resource(type="github_repo", name="repo3"),
+                 Resource(type="github_repo", name="repo4")
+             ])
+         ])),
     ]
 )
 def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
