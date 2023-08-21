@@ -2,7 +2,8 @@ import pytest
 
 from clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from clients.github import get_repos_from_github
-from models import RepositoryDetails
+from clients.jit import list_assets, get_existing_teams, create_teams
+from models import RepositoryDetails, BaseTeam, Asset
 
 
 # Sample data
@@ -76,3 +77,68 @@ def test_get_jwt_token(status_code, expected_result, mocker):
         headers={"accept": "application/json", "content-type": "application/json"}
     )
     assert token == expected_result
+
+
+@pytest.mark.parametrize(
+    "status_code, response_data, expected_assets",
+    [
+        (200, [{"asset_id": "1", "tenant_id": "tenant1", "asset_type": "type1", "vendor": "vendor1", "owner": "owner1",
+                "asset_name": "name1", "is_active": True, "created_at": "date1", "modified_at": "date2"}], [
+             Asset(asset_id="1", tenant_id="tenant1", asset_type="type1", vendor="vendor1", owner="owner1",
+                   asset_name="name1", is_active=True, created_at="date1", modified_at="date2")]),
+        (400, {}, []),
+    ]
+)
+def test_list_assets(mocker, status_code, response_data, expected_assets):
+    mock_response = mocker.MagicMock()
+    mock_response.status_code = status_code
+    mock_response.json.return_value = response_data
+    mocker.patch("requests.get", return_value=mock_response)
+
+    result = list_assets("test_token")
+    assert result == expected_assets
+
+
+@pytest.mark.parametrize(
+    "status_codes, response_data_list, expected_teams",
+    [
+        ([200, 200], [{"data": [
+            {"tenant_id": "tenant1", "id": "1", "created_at": "date1", "modified_at": "date2", "name": "name1"}],
+                       "metadata": {"after": "some_value"}}, {"data": [
+            {"tenant_id": "tenant2", "id": "2", "created_at": "date3", "modified_at": "date4", "name": "name2"}],
+                                                              "metadata": {"after": None}}],
+         [BaseTeam(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
+          BaseTeam(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
+        ([400], [{}], []),
+    ]
+)
+def test_get_existing_teams(mocker, status_codes, response_data_list, expected_teams):
+    mock_responses = [mocker.MagicMock(status_code=code, json=mocker.MagicMock(return_value=data)) for code, data in
+                      zip(status_codes, response_data_list)]
+    mocker.patch("requests.get", side_effect=mock_responses)
+
+    result = get_existing_teams("test_token")
+    assert result == expected_teams
+
+
+@pytest.mark.parametrize(
+    "teams_to_create, response_status_codes, log_messages",
+    [
+        (["team1", "team2"], [201, 201], ["Team 'team1' created successfully.", "Team 'team2' created successfully."]),
+        (["team1", "team2"], [400, 201], ["Failed to create team 'team1'", "Team 'team2' created successfully."]),
+    ]
+)
+def test_create_teams(mocker, teams_to_create, response_status_codes, log_messages):
+    mock_responses = [mocker.MagicMock(status_code=code) for code in response_status_codes]
+    mocker.patch("requests.post", side_effect=mock_responses)
+    mock_logger_info = mocker.patch("loguru.logger.info")
+    mock_logger_error = mocker.patch("loguru.logger.error")
+
+    create_teams("test_token", teams_to_create)
+
+    for message in log_messages:
+        if "successfully" in message:
+            mock_logger_info.assert_any_call(message)
+        else:
+            # check that the error message partially contains the expected message
+            assert [message in m for m in mock_logger_error.call_args.args][0]

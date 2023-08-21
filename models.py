@@ -16,8 +16,8 @@ class BaseTeam(BaseModel):
     created_at: str
     modified_at: str
     name: str
-    description: Optional[str]
-    parent_team_id: Optional[str]
+    description: Optional[str] = None
+    parent_team_id: Optional[str] = None
     children_team_ids: List[str] = []
     score: int = 0
     source: str = MANUAL_TEAM_SOURCE
@@ -35,5 +35,3 @@ class Asset(BaseModel):
     is_archived: Optional[bool] = False
     created_at: str
     modified_at: str
-    environment: Optional[str]
-    is_branch_protected_by_jit: Optional[bool]
