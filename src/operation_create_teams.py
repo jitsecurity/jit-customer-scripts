@@ -3,15 +3,14 @@ import json
 import os
 from typing import List
 
-from dotenv import load_dotenv
 from loguru import logger
+from dotenv import load_dotenv
 from pydantic import ValidationError
-
-from clients.frontegg import get_jwt_token
-from clients.github import get_repos_from_github
-from clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset
-from models import RepositoryDetails, Asset, BaseTeam
-from utils import get_teams_to_create, get_teams_to_delete
+from src.shared.clients.frontegg import get_jwt_token
+from src.shared.clients.github import get_repos_from_github
+from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset
+from src.shared.models import RepositoryDetails, Asset, BaseTeam
+from src.shared.diff_tools import get_teams_to_create, get_teams_to_delete
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv()

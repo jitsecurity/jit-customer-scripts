@@ -1,9 +1,9 @@
 import pytest
 
-from clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
-from clients.github import get_repos_from_github
-from clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset
-from models import RepositoryDetails, BaseTeam, Asset
+from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
+from src.shared.clients.github import get_repos_from_github
+from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset
+from src.shared.models import RepositoryDetails, BaseTeam, Asset
 
 
 # Sample data

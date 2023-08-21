@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from github import Github
 from loguru import logger
 
-from models import RepositoryDetails
+from src.shared.models import RepositoryDetails
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv(".env")

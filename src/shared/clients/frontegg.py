@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 from loguru import logger
 
-from consts import FRONTEGG_DEFAULT_AUTH_URL
+from src.shared.consts import FRONTEGG_DEFAULT_AUTH_URL
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv(".env")

@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
-from consts import MANUAL_TEAM_SOURCE
+from src.shared.consts import MANUAL_TEAM_SOURCE
 
 
 class RepositoryDetails(BaseModel):
