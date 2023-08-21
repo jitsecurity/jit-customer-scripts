@@ -31,7 +31,7 @@ def test_get_repos_from_github(mock_repos, expected_result, mocker):
 
     organization_mock.get_repos.return_value = mock_repos
     github_mock.get_organization.return_value = organization_mock
-    mocker.patch("clients.github.Github", return_value=github_mock)  # Adjust the import path.
+    mocker.patch("src.shared.clients.github.Github", return_value=github_mock)  # Adjust the import path.
 
     # Run the function
     repositories = get_repos_from_github()
@@ -41,7 +41,7 @@ def test_get_repos_from_github(mock_repos, expected_result, mocker):
 
 def test_get_repos_from_github_exception(mocker):
     # Mocking Github to raise an exception
-    mocker.patch("clients.github.Github", side_effect=Exception("Sample exception"))  # Adjust the import path.
+    mocker.patch("src.shared.clients.github.Github", side_effect=Exception("Sample exception"))  # Adjust the import path.
 
     # Test that the function logs an error and returns None
     result = get_repos_from_github()
