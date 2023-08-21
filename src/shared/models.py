@@ -45,8 +45,3 @@ class TeamTemplate(BaseModel):
 
 class Organization(BaseModel):
     teams: List[TeamTemplate]
-
-
-class AssetToTeamMap(BaseModel):
-    asset_name: str
-    teams: List[str]

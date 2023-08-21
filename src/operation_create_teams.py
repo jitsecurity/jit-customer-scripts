@@ -2,17 +2,16 @@ import argparse
 import json
 import os
 import sys
-from typing import List
+from typing import List, Dict
 
 from dotenv import load_dotenv
 from loguru import logger
 from pydantic import ValidationError
 
 from src.shared.clients.frontegg import get_jwt_token
-from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset
 from src.shared.diff_tools import get_teams_to_create, get_teams_to_delete
-from src.shared.models import Asset, BaseTeam, Organization, TeamTemplate, AssetToTeamMap
+from src.shared.models import Asset, BaseTeam, Organization, TeamTemplate
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv()
@@ -58,9 +57,9 @@ def update_assets(token, organization):
     assets: List[Asset] = list_assets(token)
     asset_to_team_map = get_teams_for_assets(organization)
     for asset in assets:
-        for repo in organization:
-            if asset.asset_name == repo.name:
-                add_teams_to_asset(token, asset, repo.topics)
+        teams_to_update = asset_to_team_map.get(asset.asset_name, [])
+        if teams_to_update:
+            add_teams_to_asset(token, asset, teams_to_update)
 
 
 def process_teams(token, organization):
@@ -74,12 +73,16 @@ def process_teams(token, organization):
     return teams_to_delete
 
 
-def get_teams_for_assets(organization: Organization) -> List[AssetToTeamMap]:
-    asset_to_team_map = []
+def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
+    asset_to_team_map = {}
     for team in organization.teams:
         for resource in team.resources:
             if resource.type == "github_repo":
-                asset_to_team_map.append(AssetToTeamMap(asset_name=resource.name, teams=[team.name]))
+                asset_name = resource.name
+                if asset_name in asset_to_team_map:
+                    asset_to_team_map[asset_name].append(team.name)
+                else:
+                    asset_to_team_map[asset_name] = [team.name]
     return asset_to_team_map
 
 
@@ -95,11 +98,8 @@ def main():
 
     teams_to_delete = process_teams(token, organization)
 
-
-
     if teams_to_delete:
         print(teams_to_delete)
-
 
     update_assets(token, organization)
 

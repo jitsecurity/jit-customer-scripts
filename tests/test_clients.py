@@ -3,7 +3,7 @@ import pytest
 from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset
-from src.shared.models import BaseTeam, Asset, Organization, TeamTemplate, Resource, AssetToTeamMap
+from src.shared.models import BaseTeam, Asset, Organization, TeamTemplate, Resource
 
 
 class MockRepo:
@@ -57,7 +57,8 @@ def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
 
 def test_get_teams_from_github_topics_exception(mocker):
     # Mocking Github to raise an exception
-    mocker.patch("src.shared.clients.github.Github", side_effect=Exception("Sample exception"))  # Adjust the import path.
+    mocker.patch("src.shared.clients.github.Github",
+                 side_effect=Exception("Sample exception"))  # Adjust the import path.
 
     # Test that the function logs an error and returns None
     result = get_teams_from_github_topics()
