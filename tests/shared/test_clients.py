@@ -188,21 +188,20 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
     else:
         mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
 
-
 @pytest.mark.parametrize(
-    "status_code, expected_result",
+    "status_code, expected_info, expected_error, expected_warning",
     [
-        (204, "Team 'team1' deleted successfully."),
-        (404, "Failed to delete team 'team2'. Status code: 404, {}"),
+        (204, ["Team 'team1' deleted successfully.", "Team 'team2' deleted successfully."], [], []),
+        (404, [], ["Failed to delete team 'team2'. Status code: 404, Error details."], ["Team 'team2' not found."])
     ]
 )
-def test_delete_teams(mocker, status_code, expected_result):
+def test_delete_teams(mocker, status_code, expected_info, expected_error, expected_warning):
     mock_existing_teams = [
         BaseTeam(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="team1"),
         BaseTeam(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="team2")
     ]
     mocker.patch("src.shared.clients.jit.get_existing_teams", return_value=mock_existing_teams)
-    mock_responses = [mocker.MagicMock(status_code=status_code) for _ in range(2)]
+    mock_responses = [mocker.MagicMock(status_code=status_code, text="Error details.") for _ in range(2)]
     mocker.patch("requests.delete", side_effect=mock_responses)
     mock_logger_info = mocker.patch("loguru.logger.info")
     mock_logger_error = mocker.patch("loguru.logger.error")
@@ -213,12 +212,9 @@ def test_delete_teams(mocker, status_code, expected_result):
 
     delete_teams(token, team_names)
 
-    mock_logger_info.assert_called_once_with(expected_result.format(""))
-    if status_code == 404:
-        mock_logger_error.assert_called_once_with(expected_result.format(""))
-    else:
-        mock_logger_error.assert_not_called()
-    if status_code == 404:
-        mock_logger_warning.assert_called_once_with("Team 'team2' not found.")
-    else:
-        mock_logger_warning.assert_not_called()
+    for msg in expected_info:
+        mock_logger_info.assert_any_call(msg)
+    for msg in expected_error:
+        mock_logger_error.assert_any_call(msg.format("Error details"))
+    for msg in expected_warning:
+        mock_logger_warning.assert_any_call(msg)
