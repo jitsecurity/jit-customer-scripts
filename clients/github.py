@@ -7,8 +7,8 @@ from loguru import logger
 
 from models import RepositoryDetails
 
-# Load environment variables from .env file
-load_dotenv('../.env')
+# Load environment variables from .env file. make sure it's before you import modules.
+load_dotenv(".env")
 
 ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")
 GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")

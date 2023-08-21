@@ -5,8 +5,6 @@ from typing import List
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file. make sure it's before you import modules.
-load_dotenv()
 from loguru import logger
 from pydantic import ValidationError
 
@@ -16,6 +14,8 @@ from clients.jit import get_existing_teams, create_teams, list_assets
 from models import RepositoryDetails, Asset, BaseTeam
 from utils import get_teams_to_create, get_teams_to_delete
 
+# Load environment variables from .env file. make sure it's before you import modules.
+load_dotenv()
 
 def main():
     # Create the argument parser

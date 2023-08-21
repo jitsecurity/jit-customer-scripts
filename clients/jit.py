@@ -2,11 +2,14 @@ import os
 from typing import List
 
 import requests
+from dotenv import load_dotenv
 from loguru import logger
 
 from consts import JIT_DEFAULT_API_ENDPOINT
 from models import Asset, BaseTeam
 
+# Load environment variables from .env file. make sure it's before you import modules.
+load_dotenv(".env")
 JIT_API_ENDPOINT = os.getenv("JIT_API_ENDPOINT", JIT_DEFAULT_API_ENDPOINT)
 
 

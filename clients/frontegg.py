@@ -2,9 +2,13 @@ import os
 from typing import Optional
 
 import requests
+from dotenv import load_dotenv
 from loguru import logger
 
 from consts import FRONTEGG_DEFAULT_AUTH_URL
+
+# Load environment variables from .env file. make sure it's before you import modules.
+load_dotenv(".env")
 
 FRONTEGG_AUTH_URL = os.getenv("FRONTEGG_AUTH_URL", FRONTEGG_DEFAULT_AUTH_URL)
 JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
