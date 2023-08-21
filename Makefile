@@ -19,7 +19,7 @@ configure:
 	echo "GITHUB_API_TOKEN=$$github_token" >> .env
 
 run:
-	source venv-jit/bin/activate && python main.py
+	source venv-jit/bin/activate && python operations/create_teams_op.py
 
 help:
 	@echo "Usage: make [target]"
