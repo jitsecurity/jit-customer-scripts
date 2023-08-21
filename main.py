@@ -55,7 +55,7 @@ class Asset(BaseModel):
     is_branch_protected_by_jit: Optional[bool]
 
 
-def get_repos_from_github():
+def get_repos_from_github() -> Optional[List[RepositoryDetails]]:
     try:
         # Create a GitHub instance using the token
         github = Github(GITHUB_TOKEN)
@@ -87,7 +87,7 @@ def get_repos_from_github():
         return None
 
 
-def list_assets(token) -> List[Asset]:
+def list_assets(token: str) -> List[Asset]:
     try:
         # Make a GET request to the asset API
         url = f"{JIT_API_ENDPOINT}/asset"
@@ -110,7 +110,7 @@ def list_assets(token) -> List[Asset]:
         return []
 
 
-def get_jwt_token():
+def get_jwt_token() -> Optional[str]:
     payload = {
         "clientId": JIT_CLIENT_ID,
         "secret": JIT_CLIENT_SECRET
@@ -129,7 +129,7 @@ def get_jwt_token():
         return None
 
 
-def get_existing_teams(token) -> List[BaseTeam]:
+def get_existing_teams(token: str) -> List[BaseTeam]:
     def _handle_resoponse(response, existing_teams):
         response = response.json()
         data = response['data']
@@ -166,11 +166,11 @@ def get_existing_teams(token) -> List[BaseTeam]:
         return []
 
 
-def get_teams_to_create(topic_names, existing_team_names):
+def get_teams_to_create(topic_names: List[str], existing_team_names: List[str]) -> List[str]:
     return list(set(topic_names) - set(existing_team_names))
 
 
-def get_teams_to_delete(topic_names, existing_team_names):
+def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) -> List[str]:
     return list(set(existing_team_names) - set(topic_names))
 
 
