@@ -1,6 +1,6 @@
 import pytest
 
-from main import get_teams_to_delete, get_teams_to_create
+from utils import get_teams_to_delete, get_teams_to_create
 
 
 @pytest.mark.parametrize(
