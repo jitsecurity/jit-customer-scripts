@@ -1,9 +1,9 @@
 import pytest
 
 from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
-from src.shared.clients.github import get_repos_from_github
+from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset
-from src.shared.models import RepositoryDetails, BaseTeam, Asset
+from src.shared.models import RepositoryDetails, BaseTeam, Asset, TeamStructure, TeamTemplate, Resource
 
 
 class MockRepo:
@@ -18,13 +18,16 @@ class MockRepo:
 @pytest.mark.parametrize(
     "mock_repos, expected_result",
     [
-        ([], []),
-        ([MockRepo("repo1", [])], []),
+        ([], TeamStructure(teams=[])),
+        ([MockRepo("repo1", [])], TeamStructure(teams=[])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"])],
-         [RepositoryDetails(name="repo1", topics=["topic1"]), RepositoryDetails(name="repo2", topics=["topic2"])]),
+         TeamStructure(teams=[
+             TeamTemplate(name="topic1", members=[], resources=[Resource(type="github_repo", name="repo1")]),
+             TeamTemplate(name="topic2", members=[], resources=[Resource(type="github_repo", name="repo2")])
+         ])),
     ]
 )
-def test_get_repos_from_github(mock_repos, expected_result, mocker):
+def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
     # Mocking Github instance methods
     github_mock = mocker.Mock()
     organization_mock = mocker.Mock()
@@ -34,18 +37,18 @@ def test_get_repos_from_github(mock_repos, expected_result, mocker):
     mocker.patch("src.shared.clients.github.Github", return_value=github_mock)  # Adjust the import path.
 
     # Run the function
-    repositories = get_repos_from_github()
+    repositories = get_teams_from_github_topics()
 
     assert repositories == expected_result
 
 
-def test_get_repos_from_github_exception(mocker):
+def test_get_teams_from_github_topics_exception(mocker):
     # Mocking Github to raise an exception
     mocker.patch("src.shared.clients.github.Github", side_effect=Exception("Sample exception"))  # Adjust the import path.
 
     # Test that the function logs an error and returns None
-    result = get_repos_from_github()
-    assert result is None
+    result = get_teams_from_github_topics()
+    assert result == TeamStructure(teams=[])
 
 
 @pytest.mark.parametrize(
