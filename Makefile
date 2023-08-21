@@ -19,7 +19,10 @@ configure:
 	echo "GITHUB_API_TOKEN=$$github_token" >> .env
 
 create-teams:
-	source venv-jit/bin/activate && export PYTHONPATH=$(CURDIR) && python src/utils/github_topic_to_json_file.py && python src/operation_create_teams.py --input repos.json
+	source venv-jit/bin/activate && \
+	export PYTHONPATH=$(CURDIR) && \
+	 python src/utils/github_topic_to_json_file.py && \
+	  python src/scripts/create_teams.py --input repos.json
 
 help:
 	@echo "Usage: make [target]"
