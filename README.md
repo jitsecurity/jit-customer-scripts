@@ -1,7 +1,8 @@
 # jit-create-teams-from-github-topics
 
 This project is a Python script that interacts with the GitHub API and the JIT Teams API.\
-It lists the repository names and topics for a given GitHub organization and generates teams according to the topics from Github.
+It lists the repository names and topics for a given GitHub organization and generates teams\
+according to the topics from Github.
 
 ## Prerequisites
 
@@ -39,10 +40,10 @@ Before running the script, you need to configure the necessary environment varia
    ```
 
 2. Enter the required information when prompted:
-   - GitHub organization name
-   - API client ID
-   - API client secret
-   - GitHub token
+    - GitHub organization name
+    - API client ID
+    - API client secret
+    - GitHub token
 
 3. The command will generate a `.env` file with the provided information.
 
@@ -54,19 +55,25 @@ To run the script and retrieve the repository names and topics, use the followin
    make run
    ```
 
-### Using external json file with the  --input argument
+### Using external json file with the --input argument
 
-You can also provide a JSON file containing team details using the `--input` argument. The JSON file should have the following structure:
+You can also provide a JSON file containing team details using the `--input` argument. The JSON file should\
+have the following structure:
 
 ```json
 [
   {
     "name": "Repository 1",
-    "topics": ["topic1", "topic2"]
+    "topics": [
+      "topic1",
+      "topic2"
+    ]
   },
   {
     "name": "Repository 2",
-    "topics": ["topic3"]
+    "topics": [
+      "topic3"
+    ]
   }
 ]
 ```
@@ -81,6 +88,8 @@ Replace `path/to/teams.json` with the actual path to your JSON file.
 
 ## Development
 
-To override the default Frontegg authentication endpoint, you can set the `FRONTEGG_AUTH_ENDPOINT` environment variable. If the variable is not set, the default value will be used.
+To override the default Frontegg authentication endpoint, you can set the `FRONTEGG_AUTH_ENDPOINT` environment variable.\
+If the variable is not set, the default value will be used.
 
-To override Jit's API end point, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set, the default value will be used.
+To override Jit's API end point, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set,
+the default value will be used.
