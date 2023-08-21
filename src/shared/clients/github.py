@@ -35,19 +35,18 @@ def get_teams_from_github_topics() -> TeamStructure:
             if not topics:
                 continue
 
-            # Get the first topic
-            topic = topics[0]
+            # Iterate over each topic
+            for topic in topics:
+                # Check if the topic already exists in the teams dictionary
+                if topic in teams:
+                    # Add the repository to the existing team
+                    teams[topic].resources.append(Resource(type="github_repo", name=repo_name))
+                else:
+                    # Create a new team template for the topic
+                    team_template = TeamTemplate(name=topic, members=[], resources=[Resource(type="github_repo", name=repo_name)])
 
-            # Check if the topic already exists in the teams dictionary
-            if topic in teams:
-                # Add the repository to the existing team
-                teams[topic].resources.append(Resource(type="github_repo", name=repo_name))
-            else:
-                # Create a new team template for the topic
-                team_template = TeamTemplate(name=topic, members=[], resources=[Resource(type="github_repo", name=repo_name)])
-
-                # Add the team template to the teams dictionary
-                teams[topic] = team_template
+                    # Add the team template to the teams dictionary
+                    teams[topic] = team_template
 
         return TeamStructure(teams=list(teams.values()))
     except Exception as e:
