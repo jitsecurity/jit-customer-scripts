@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from clients.frontegg import get_jwt_token
 from clients.github import get_repos_from_github
-from clients.jit import get_existing_teams, create_teams, list_assets
+from clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset
 from models import RepositoryDetails, Asset, BaseTeam
 from utils import get_teams_to_create, get_teams_to_delete
 
@@ -75,18 +75,18 @@ def main():
 
     teams_to_create = get_teams_to_create(topic_names, existing_team_names)
     teams_to_delete = get_teams_to_delete(topic_names, existing_team_names)
-    if teams_to_delete:
-        print(teams_to_delete)
+
     if teams_to_create:
         create_teams(token, teams_to_create)
 
     assets: List[Asset] = list_assets(token)
-    if not assets:
-        logger.error("Failed to retrieve assets. Exiting...")
-        return
+    for asset in assets:
+        for repo in repos:
+            if asset.asset_name == repo.name:
+                add_teams_to_asset(token, asset, repo.topics)
 
-    # Print the assets
-    logger.info(assets)
+    if teams_to_delete:
+        print(teams_to_delete)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import pytest
 
 from clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from clients.github import get_repos_from_github
-from clients.jit import list_assets, get_existing_teams, create_teams
+from clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset
 from models import RepositoryDetails, BaseTeam, Asset
 
 
@@ -142,3 +142,32 @@ def test_create_teams(mocker, teams_to_create, response_status_codes, log_messag
         else:
             # check that the error message partially contains the expected message
             assert [message in m for m in mock_logger_error.call_args.args][0]
+
+
+@pytest.mark.parametrize(
+    "status_code, expected_result",
+    [
+        (200, None),
+        (400, "Failed to add teams to asset 'asset_id'. Status code: 400, {}"),
+    ]
+)
+def test_add_teams_to_asset(mocker, status_code, expected_result):
+    mock_response = mocker.MagicMock()
+    mock_response.status_code = status_code
+    mocker.patch("requests.patch", return_value=mock_response)
+    mock_logger_info = mocker.patch("loguru.logger.info")
+    mock_logger_error = mocker.patch("loguru.logger.error")
+
+    asset = Asset(asset_id="asset_id", tenant_id="tenant_id", asset_type="asset_type", vendor="vendor",
+                  owner="owner", asset_name="asset_name", is_active=True, created_at="created_at",
+                  modified_at="modified_at")
+    teams = ["team1", "team2"]
+
+    add_teams_to_asset("test_token", asset, teams)
+
+    if status_code == 200:
+        mock_logger_info.assert_called_once_with("Teams added to asset 'asset_id' successfully.")
+    else:
+        mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
+
+

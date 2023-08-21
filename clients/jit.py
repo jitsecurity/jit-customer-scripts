@@ -91,3 +91,23 @@ def create_teams(token, teams_to_create):
                     f"Failed to create team '{team_name}'. Status code: {response.status_code}, {response.text}")
     except Exception as e:
         logger.error(f"Failed to create teams: {str(e)}")
+
+
+def add_teams_to_asset(token, asset: Asset, teams: List[str]):
+    try:
+        url = f"{JIT_API_ENDPOINT}/assets/{asset.asset_id}"
+        headers = {
+            "Authorization": f"Bearer {token}",
+        }
+        payload = {
+            "teams": teams
+        }
+        response = requests.patch(url, json=payload, headers=headers)
+        if response.status_code == 200:
+            logger.info(f"Teams added to asset '{asset.asset_id}' successfully.")
+        else:
+            logger.error(f"Failed to add teams to asset '{asset.asset_id}'. Status code: "
+                         f"{response.status_code}, {response.text}")
+    except Exception as e:
+        logger.error(f"Failed to add teams to asset: {str(e)}")
+
