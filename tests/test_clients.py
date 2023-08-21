@@ -6,7 +6,6 @@ from src.shared.clients.jit import list_assets, get_existing_teams, create_teams
 from src.shared.models import RepositoryDetails, BaseTeam, Asset
 
 
-# Sample data
 class MockRepo:
     def __init__(self, name, topics):
         self.name = name
