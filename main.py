@@ -1,7 +1,7 @@
 import argparse
 import json
 import os
-from typing import List
+from typing import List, Optional
 
 import requests
 from dotenv import load_dotenv
@@ -17,6 +17,8 @@ JIT_API_ENDPOINT = os.getenv("JIT_API_ENDPOINT", "https://api.jit.io")
 GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
 JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
+MANUAL_TEAM_SOURCE = "manual"
+REPO = 'repo'
 
 
 class RepositoryDetails(BaseModel):
@@ -24,7 +26,36 @@ class RepositoryDetails(BaseModel):
     topics: List[str]
 
 
-def get_topics_for_teams():
+class BaseTeam(BaseModel):
+    tenant_id: str
+    id: str
+    created_at: str
+    modified_at: str
+    name: str
+    description: Optional[str]
+    parent_team_id: Optional[str]
+    children_team_ids: List[str] = []
+    score: int = 0
+    source: str = MANUAL_TEAM_SOURCE
+
+
+class Asset(BaseModel):
+    asset_id: str
+    tenant_id: str
+    asset_type: str
+    vendor: str
+    owner: str
+    asset_name: str
+    is_active: bool
+    is_covered: bool = True
+    is_archived: Optional[bool] = False
+    created_at: str
+    modified_at: str
+    environment: Optional[str]
+    is_branch_protected_by_jit: Optional[bool]
+
+
+def get_repos_from_github():
     try:
         # Create a GitHub instance using the token
         github = Github(GITHUB_TOKEN)
@@ -42,7 +73,8 @@ def get_topics_for_teams():
 
             # Get the repository topics
             topics = repo.get_topics()
-
+            if not topics:
+                continue
             # Create a Repository instance with repository details
             repo_details = RepositoryDetails(name=repo_name, topics=topics)
 
@@ -55,7 +87,7 @@ def get_topics_for_teams():
         return None
 
 
-def list_assets(token):
+def list_assets(token) -> List[Asset]:
     try:
         # Make a GET request to the asset API
         url = f"{JIT_API_ENDPOINT}/asset"
@@ -69,13 +101,13 @@ def list_assets(token):
             # Parse the response JSON
             assets = response.json()
 
-            return assets
+            return [Asset(**asset) for asset in assets]
         else:
             print(f"Failed to retrieve assets. Status code: {response.status_code}")
-            return None
+            return []
     except Exception as e:
         print(f"Failed to retrieve assets: {str(e)}")
-        return None
+        return []
 
 
 def get_jwt_token():
@@ -97,6 +129,51 @@ def get_jwt_token():
         return None
 
 
+def get_existing_teams(token) -> List[BaseTeam]:
+    def _handle_resoponse(response, existing_teams):
+        response = response.json()
+        data = response['data']
+        existing_teams.extend(data)
+        after = response['metadata']['after']
+        return after
+
+    try:
+        # Make a GET request to the asset API
+        url = f"{JIT_API_ENDPOINT}/teams?limit=100"
+
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+        response = requests.get(url, headers=headers)
+        existing_teams = []
+        # Check if the request was successful
+        if response.status_code == 200:
+            after = _handle_resoponse(response, existing_teams)
+            while after:
+                response = requests.get(f"{url}&after={after}", headers=headers)
+                if response.status_code == 200:
+                    after = _handle_resoponse(response, existing_teams)
+                else:
+                    print(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+                    return []
+
+            return [BaseTeam(**team) for team in existing_teams]
+        else:
+            print(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+            return []
+    except Exception as e:
+        print(f"Failed to retrieve teams: {str(e)}")
+        return []
+
+
+def get_teams_to_create(topic_names, existing_team_names):
+    return list(set(topic_names) - set(existing_team_names))
+
+
+def get_teams_to_delete(topic_names, existing_team_names):
+    return list(set(existing_team_names) - set(topic_names))
+
+
 def main():
     # Create the argument parser
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
@@ -106,6 +183,11 @@ def main():
 
     # Parse the command line arguments
     args = parser.parse_args()
+
+    token = get_jwt_token()
+    if not token:
+        print("Failed to retrieve JWT token. Exiting...")
+        return
 
     # Check if the --input argument is provided
     if args.input:
@@ -123,30 +205,30 @@ def main():
 
         # Parse the JSON data
         try:
-            teams = [RepositoryDetails(**team) for team in json.loads(json_data)]
+            repos = [RepositoryDetails(**team) for team in json.loads(json_data)]
         except ValidationError as e:
             print(f"Failed to validate input file: {e}")
             return
     else:
         # Call the get_teams function
-        teams = get_topics_for_teams()
-        if not teams:
-            print("Failed to retrieve Teams. Exiting...")
+        repos = get_repos_from_github()
+        if not repos:
+            print("Failed to retrieve topics. Exiting...")
             return
 
-    # Convert the list to JSON format
-    json_data = json.dumps([t.model_dump() for t in teams], indent=2)
+    topic_names = []
+    for repo in repos:
+        topic_names.extend(repo.topics)
 
-    # Print the JSON data
-    print(json_data)
+    existing_teams: List[BaseTeam] = get_existing_teams(token)
+    existing_team_names = [team.name for team in existing_teams]
 
-    # Call the list_assets function
-    token = get_jwt_token()
-    if not token:
-        print("Failed to retrieve JWT token. Exiting...")
-        return
+    teams_to_create = get_teams_to_create(topic_names, existing_team_names)
+    teams_to_delete = get_teams_to_delete(topic_names, existing_team_names)
 
-    assets = list_assets(token)
+
+
+    assets: List[Asset] = list_assets(token)
     if not assets:
         print("Failed to retrieve assets. Exiting...")
         return
