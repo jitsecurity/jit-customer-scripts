@@ -17,7 +17,7 @@ from src.shared.diff_tools import get_teams_to_create, get_teams_to_delete
 load_dotenv()
 
 
-def get_repos() -> List[RepositoryDetails]:
+def parse_input_file() -> List[RepositoryDetails]:
     # Create the argument parser
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
 
@@ -32,10 +32,10 @@ def get_repos() -> List[RepositoryDetails]:
         # Check if the file exists and is a JSON file
         if not os.path.isfile(args.input):
             logger.error("Error: File does not exist.")
-            return []
+            sys.exit(1)
         if not args.input.endswith(".json"):
             logger.error("Error: File is not a JSON file.")
-            return []
+            sys.exit(1)
 
         # Read the JSON file
         with open(args.input, "r") as file:
@@ -46,7 +46,7 @@ def get_repos() -> List[RepositoryDetails]:
             repos = [RepositoryDetails(**team) for team in json.loads(json_data)]
         except ValidationError as e:
             logger.error(f"Failed to validate input file: {e}")
-            return []
+            sys.exit(1)
     else:
         logger.error("No input file provided.")
         sys.exit(1)
@@ -59,12 +59,12 @@ def main():
         logger.error("Failed to retrieve JWT token. Exiting...")
         return
 
-    repos = get_repos()
-    if not repos:
+    desired_teams = parse_input_file()
+    if not desired_teams:
         return
 
     topic_names = []
-    for repo in repos:
+    for repo in desired_teams:
         topic_names.extend(repo.topics)
 
     existing_teams: List[BaseTeam] = get_existing_teams(token)
@@ -78,7 +78,7 @@ def main():
 
     assets: List[Asset] = list_assets(token)
     for asset in assets:
-        for repo in repos:
+        for repo in desired_teams:
             if asset.asset_name == repo.name:
                 add_teams_to_asset(token, asset, repo.topics)
 
