@@ -45,7 +45,9 @@ def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
     github_mock = mocker.Mock()
     organization_mock = mocker.Mock()
 
-    organization_mock.parse_input_file.return_value = mock_repos
+    # Mock the get_repos method to return the list of repositories
+    organization_mock.get_repos.return_value = mock_repos
+
     github_mock.get_organization.return_value = organization_mock
     mocker.patch("src.shared.clients.github.Github", return_value=github_mock)  # Adjust the import path.
 

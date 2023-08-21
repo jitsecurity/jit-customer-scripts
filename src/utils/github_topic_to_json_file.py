@@ -1,5 +1,3 @@
-import json
-
 from src.shared.clients.github import get_teams_from_github_topics
 
 if __name__ == '__main__':
