@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from src.shared.consts import MANUAL_TEAM_SOURCE
 
 
-class TeamObject(BaseModel):
+class TeamAttributes(BaseModel):
     tenant_id: str
     id: str
     created_at: str
@@ -16,6 +16,17 @@ class TeamObject(BaseModel):
     children_team_ids: List[str] = []
     score: int = 0
     source: str = MANUAL_TEAM_SOURCE
+
+
+class Resource(BaseModel):
+    type: str
+    name: str
+
+
+class TeamStructure(BaseModel):
+    name: str
+    members: List[str] = []
+    resources: List[Resource] = []
 
 
 class Asset(BaseModel):
@@ -32,16 +43,5 @@ class Asset(BaseModel):
     modified_at: str
 
 
-class Resource(BaseModel):
-    type: str
-    name: str
-
-
-class TeamTemplate(BaseModel):
-    name: str
-    members: List[str] = []
-    resources: List[Resource] = []
-
-
 class Organization(BaseModel):
-    teams: List[TeamTemplate]
+    teams: List[TeamStructure]

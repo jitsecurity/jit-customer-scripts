@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from github import Github
 from loguru import logger
 
-from src.shared.models import TeamTemplate, Resource, Organization
+from src.shared.models import TeamStructure, Resource, Organization
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv(".env")
@@ -42,8 +42,8 @@ def get_teams_from_github_topics() -> Organization:
                     teams[topic].resources.append(Resource(type="github_repo", name=repo_name))
                 else:
                     # Create a new team template for the topic
-                    team_template = TeamTemplate(name=topic, members=[],
-                                                 resources=[Resource(type="github_repo", name=repo_name)])
+                    team_template = TeamStructure(name=topic, members=[],
+                                                  resources=[Resource(type="github_repo", name=repo_name)])
 
                     # Add the team template to the teams dictionary
                     teams[topic] = team_template

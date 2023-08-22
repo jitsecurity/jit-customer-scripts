@@ -3,7 +3,7 @@ import pytest
 from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams
-from src.shared.models import TeamObject, Asset, Organization, TeamTemplate, Resource
+from src.shared.models import TeamAttributes, Asset, Organization, TeamStructure, Resource
 
 
 class MockRepo:
@@ -22,17 +22,17 @@ class MockRepo:
         ([MockRepo("repo1", [])], Organization(teams=[])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"])],
          Organization(teams=[
-             TeamTemplate(name="topic1", members=[], resources=[Resource(type="github_repo", name="repo1")]),
-             TeamTemplate(name="topic2", members=[], resources=[Resource(type="github_repo", name="repo2")])
+             TeamStructure(name="topic1", members=[], resources=[Resource(type="github_repo", name="repo1")]),
+             TeamStructure(name="topic2", members=[], resources=[Resource(type="github_repo", name="repo2")])
          ])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"]), MockRepo("repo3", ["topic2"]),
           MockRepo("repo4", ["topic1", "topic2"])],
          Organization(teams=[
-             TeamTemplate(name="topic1", members=[], resources=[
+             TeamStructure(name="topic1", members=[], resources=[
                  Resource(type="github_repo", name="repo1"),
                  Resource(type="github_repo", name="repo4")
              ]),
-             TeamTemplate(name="topic2", members=[], resources=[
+             TeamStructure(name="topic2", members=[], resources=[
                  Resource(type="github_repo", name="repo2"),
                  Resource(type="github_repo", name="repo3"),
                  Resource(type="github_repo", name="repo4")
@@ -125,8 +125,8 @@ def test_list_assets(mocker, status_code, response_data, expected_assets):
             "metadata": {"after": "some_value"}}, {"data": [
             {"tenant_id": "tenant2", "id": "2", "created_at": "date3", "modified_at": "date4", "name": "name2"}],
             "metadata": {"after": None}}],
-         [TeamObject(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
-          TeamObject(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
+         [TeamAttributes(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
+          TeamAttributes(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
         ([400], [{}], []),
     ]
 )
@@ -202,7 +202,7 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
 def test_delete_teams(mocker, status_code, existing_team_names, input_team_names, expected_info, expected_error,
                       expected_warning):
     mock_existing_teams = [
-        TeamObject(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
+        TeamAttributes(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
                  name=team_name)
         for i, team_name in enumerate(existing_team_names)
     ]

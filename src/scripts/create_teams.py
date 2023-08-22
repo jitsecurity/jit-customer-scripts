@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from src.shared.clients.frontegg import get_jwt_token
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams
 from src.shared.diff_tools import get_different_items_in_lists
-from src.shared.models import Asset, TeamObject, Organization, TeamTemplate
+from src.shared.models import Asset, TeamAttributes, Organization, TeamStructure
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv()
@@ -50,7 +50,7 @@ def parse_input_file() -> Organization:
         # Parse the JSON data
         try:
             data = json.loads(json_data)
-            return Organization(teams=[TeamTemplate(**team) for team in data["teams"]])
+            return Organization(teams=[TeamStructure(**team) for team in data["teams"]])
         except ValidationError as e:
             logger.error(f"Failed to validate input file: {e}")
             sys.exit(1)
@@ -119,7 +119,7 @@ def process_teams(token, organization):
         List[str]: The names of the teams to delete.
     """
     desired_teams = [t.name for t in organization.teams]
-    existing_teams: List[TeamObject] = get_existing_teams(token)
+    existing_teams: List[TeamAttributes] = get_existing_teams(token)
     existing_team_names = [team.name for team in existing_teams]
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
