@@ -1,6 +1,6 @@
 import pytest
 
-from src.shared.diff_tools import get_teams_to_delete, get_teams_to_create
+from src.scripts.create_teams import get_teams_to_delete, get_teams_to_create
 
 
 @pytest.mark.parametrize(

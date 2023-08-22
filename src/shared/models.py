@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from src.shared.consts import MANUAL_TEAM_SOURCE
 
 
-class BaseTeam(BaseModel):
+class TeamObject(BaseModel):
     tenant_id: str
     id: str
     created_at: str

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
-from src.shared.models import Asset, BaseTeam
+from src.shared.models import Asset, TeamObject
 
 # Load environment variables from .env file. make sure it's before you import modules.
 load_dotenv(".env")
@@ -36,7 +36,7 @@ def list_assets(token: str) -> List[Asset]:
         return []
 
 
-def get_existing_teams(token: str) -> List[BaseTeam]:
+def get_existing_teams(token: str) -> List[TeamObject]:
     def _handle_resoponse(response, existing_teams):
         response = response.json()
         data = response['data']
@@ -64,7 +64,7 @@ def get_existing_teams(token: str) -> List[BaseTeam]:
                     logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                     return []
 
-            return [BaseTeam(**team) for team in existing_teams]
+            return [TeamObject(**team) for team in existing_teams]
         else:
             logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
             return []
@@ -74,7 +74,7 @@ def get_existing_teams(token: str) -> List[BaseTeam]:
 
 
 def delete_teams(token, team_names):
-    existing_teams: List[BaseTeam] = get_existing_teams(token)
+    existing_teams: List[TeamObject] = get_existing_teams(token)
 
     for team_name in team_names:
         team_id = None

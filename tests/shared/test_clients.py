@@ -3,7 +3,7 @@ import pytest
 from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams
-from src.shared.models import BaseTeam, Asset, Organization, TeamTemplate, Resource
+from src.shared.models import TeamObject, Asset, Organization, TeamTemplate, Resource
 
 
 class MockRepo:
@@ -125,8 +125,8 @@ def test_list_assets(mocker, status_code, response_data, expected_assets):
             "metadata": {"after": "some_value"}}, {"data": [
             {"tenant_id": "tenant2", "id": "2", "created_at": "date3", "modified_at": "date4", "name": "name2"}],
             "metadata": {"after": None}}],
-         [BaseTeam(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
-          BaseTeam(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
+         [TeamObject(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
+          TeamObject(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
         ([400], [{}], []),
     ]
 )
@@ -202,7 +202,7 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
 def test_delete_teams(mocker, status_code, existing_team_names, input_team_names, expected_info, expected_error,
                       expected_warning):
     mock_existing_teams = [
-        BaseTeam(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
+        TeamObject(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
                  name=team_name)
         for i, team_name in enumerate(existing_team_names)
     ]
