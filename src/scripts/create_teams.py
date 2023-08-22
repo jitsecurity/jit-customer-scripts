@@ -15,6 +15,9 @@ from src.shared.models import Asset, TeamAttributes, Organization, TeamStructure
 
 # Load environment variables from .env file.
 load_dotenv()
+logger.remove()  # Remove default handler
+logger_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}"
+logger.add(sys.stderr, format=logger_format)
 
 
 def parse_input_file() -> Organization:
@@ -49,7 +52,7 @@ def parse_input_file() -> Organization:
     try:
         data = json.loads(json_data)
         return Organization(teams=[TeamStructure(**team) for team in data["teams"]])
-    except ValidationError as e:
+    except (ValidationError, KeyError) as e:
         logger.error(f"Failed to validate input file: {e}")
         sys.exit(1)
 
@@ -171,5 +174,4 @@ def main():
 
 
 if __name__ == '__main__':
-    logger.add("app.log", rotation="5 MB", level="INFO")
     main()
