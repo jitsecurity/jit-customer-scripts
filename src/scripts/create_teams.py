@@ -70,11 +70,13 @@ def update_assets(token, organization):
     Returns:
         None
     """
+    logger.info("Updating assets.")
     assets: List[Asset] = list_assets(token)
     asset_to_team_map = get_teams_for_assets(organization)
     for asset in assets:
         teams_to_update = asset_to_team_map.get(asset.asset_name, [])
         if teams_to_update:
+            logger.info(f"Adding teams {teams_to_update} to asset {asset.asset_name}")
             add_teams_to_asset(token, asset, teams_to_update)
 
 
@@ -118,12 +120,14 @@ def process_teams(token, organization):
     Returns:
         List[str]: The names of the teams to delete.
     """
+    logger.info("Processing teams.")
     desired_teams = [t.name for t in organization.teams]
     existing_teams: List[TeamObject] = get_existing_teams(token)
     existing_team_names = [team.name for team in existing_teams]
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
     if teams_to_create:
+        logger.info(f"Creating {len(teams_to_create)} teams: {teams_to_create}")
         create_teams(token, teams_to_create)
     return teams_to_delete
 
@@ -151,6 +155,7 @@ def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
 
 
 def main():
+    logger.info("Starting the update process.")
     jit_token = get_jit_jwt_token()
     if not jit_token:
         logger.error("Failed to retrieve JWT token. Exiting...")
@@ -162,9 +167,6 @@ def main():
         return
 
     teams_to_delete = process_teams(jit_token, organization)
-
-    if teams_to_delete:
-        print(teams_to_delete)
 
     update_assets(jit_token, organization)
 
