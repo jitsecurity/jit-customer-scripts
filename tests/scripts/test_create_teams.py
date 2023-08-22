@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from src.scripts.create_teams import parse_input_file, process_teams, update_assets
-from src.shared.models import Organization, TeamStructure
+from src.shared.models import Organization, TeamStructure, TeamAttributes
 
 
 @pytest.fixture
@@ -22,9 +22,10 @@ def organization():
     [
         ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1),
         (
-                '{"teams": [{"name": "team1", "members": [], "resources": []}, '
-                '{"name": "team2", "members": [], "resources": []}]}',
-                2),
+            '{"teams": [{"name": "team1", "members": [], "resources": []}, '
+            '{"name": "team2", "members": [], "resources": []}]}',
+            2,
+        ),
     ],
 )
 def test_parse_input_file(json_data, expected_teams):
@@ -71,22 +72,22 @@ def test_parse_input_file_with_invalid_json(invalid_file, json_data, should_rais
                 assert exc_info.value.code == 1
 
 
-def test_process_teams(organization):
-    # Test with no existing teams
+@pytest.mark.parametrize(
+    "existing_teams, expected_teams_to_create, expected_teams_to_delete",
+    [
+        ([], ["team1", "team2"], []),
+        (["team1", "team2"], [], []),
+        ([], [], ["team1", "team2"]),
+        (["team1", "team2"], ["team3"], ["team1", "team2"]),
+    ],
+)
+def test_process_teams(organization, existing_teams, expected_teams_to_create, expected_teams_to_delete):
+    existing_teams = [TeamAttributes(name=team, attribute1=None, attribute2=None) for team in existing_teams]
     with patch("src.scripts.create_teams.get_existing_teams") as mock_get_existing_teams:
-        mock_get_existing_teams.return_value = []
-        result = process_teams("token", organization)
-        assert len(result) == 0
-
-    # Test with some existing teams
-    with patch("src.scripts.create_teams.get_existing_teams") as mock_get_existing_teams:
-        mock_get_existing_teams.return_value = [
-            TeamStructure(name="team1", members=[], resources=[]),
-            TeamStructure(name="team3", members=[], resources=[]),
-        ]
-        result = process_teams("token", organization)
-        assert len(result) == 1
-        assert result[0] == "team3"
+        with patch("src.scripts.create_teams.create_teams") as mock_create_teams:
+            mock_get_existing_teams.return_value = existing_teams
+            teams_to_delete = process_teams("token", organization)
+            assert teams_to_delete == expected_teams_to_delete
 
 
 def test_update_assets(organization):
