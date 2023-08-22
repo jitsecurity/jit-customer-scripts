@@ -1,5 +1,7 @@
 # Jit Customer Scripts
 
+[![codecov](https://codecov.io/gh/jitsecurity/jit-customer-scripts/graph/badge.svg?token=76IhFwTPjv)](https://codecov.io/gh/jitsecurity/jit-customer-scripts)
+
 This project provides customer scripts to help them with their JIT solution. \
 The `create-teams.py` script's goal is to create teams and update assets based on the provided JSON file.
 

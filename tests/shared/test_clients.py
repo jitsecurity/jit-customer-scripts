@@ -1,8 +1,8 @@
 import pytest
 
-from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
-from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams
+from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams, \
+    get_jit_jwt_token, JIT_API_ENDPOINT
 from src.shared.models import TeamAttributes, Asset, Organization, TeamStructure, Resource
 
 
@@ -40,7 +40,7 @@ class MockRepo:
          ])),
     ]
 )
-def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
+def test_get_teams_from_github_topics__happy_flow(mock_repos, expected_result, mocker):
     # Mocking Github instance methods
     github_mock = mocker.Mock()
     organization_mock = mocker.Mock()
@@ -57,7 +57,7 @@ def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
     assert repositories == expected_result
 
 
-def test_get_teams_from_github_topics_exception(mocker):
+def test_get_teams_from_github_topics__exception_from_github(mocker):
     # Mocking Github to raise an exception
     mocker.patch("src.shared.clients.github.Github",
                  side_effect=Exception("Sample exception"))  # Adjust the import path.
@@ -87,10 +87,10 @@ def test_get_jwt_token(status_code, expected_result, mocker):
 
     requests_post_mock = mocker.patch("requests.post", return_value=response_mock)
 
-    token = get_jwt_token()
+    token = get_jit_jwt_token()
 
     requests_post_mock.assert_called_once_with(
-        FRONTEGG_AUTH_URL,
+        f"{JIT_API_ENDPOINT}/authentication/login",
         json={"clientId": None, "secret": None},
         headers={"accept": "application/json", "content-type": "application/json"}
     )
@@ -184,7 +184,7 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
     add_teams_to_asset("test_token", asset, teams)
 
     if status_code == 200:
-        mock_logger_info.assert_called_once_with("Teams added to asset 'asset_id' successfully.")
+        mock_logger_info.assert_called_once_with("Teams added to asset 'asset_name' successfully.")
     else:
         mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
 

@@ -1,5 +1,6 @@
 import os
 from typing import List
+from typing import Optional
 
 import requests
 from dotenv import load_dotenv
@@ -8,9 +9,31 @@ from loguru import logger
 from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
 from src.shared.models import Asset, TeamAttributes
 
-# Load environment variables from .env file. make sure it's before you import modules.
+# Load environment variables from .env file.
 load_dotenv(".env")
 JIT_API_ENDPOINT = os.getenv("JIT_API_ENDPOINT", JIT_DEFAULT_API_ENDPOINT)
+
+JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
+JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
+
+
+def get_jit_jwt_token() -> Optional[str]:
+    payload = {
+        "clientId": JIT_CLIENT_ID,
+        "secret": JIT_CLIENT_SECRET
+    }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json"
+    }
+
+    response = requests.post(f"{JIT_API_ENDPOINT}/authentication/login", json=payload, headers=headers)
+
+    if response.status_code == 200:
+        return response.json().get('accessToken')
+    else:
+        logger.error(f"Failed to retrieve JWT token. Status code: {response.status_code}")
+        return None
 
 
 def list_assets(token: str) -> List[Asset]:
@@ -27,6 +50,7 @@ def list_assets(token: str) -> List[Asset]:
             # Parse the response JSON
             assets = response.json()
 
+            logger.info("Retrieved assets successfully.")
             return [Asset(**asset) for asset in assets]
         else:
             logger.error(f"Failed to retrieve assets. Status code: {response.status_code}")
@@ -64,6 +88,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
                     logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                     return []
 
+            logger.info("Retrieved existing teams successfully.")
             return [TeamAttributes(**team) for team in existing_teams]
         else:
             logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
@@ -101,9 +126,7 @@ def delete_teams(token, team_names):
 def create_teams(token, teams_to_create):
     try:
         url = f"{JIT_API_ENDPOINT}/teams/"
-        headers = {
-            "Authorization": f"Bearer {token}",
-        }
+        headers = get_request_headers(token)
         for team_name in teams_to_create:
             payload = {
                 "name": team_name
@@ -118,18 +141,23 @@ def create_teams(token, teams_to_create):
         logger.error(f"Failed to create teams: {str(e)}")
 
 
+def get_request_headers(token):
+    headers = {
+        "Authorization": f"Bearer {token}",
+    }
+    return headers
+
+
 def add_teams_to_asset(token, asset: Asset, teams: List[str]):
     try:
-        url = f"{JIT_API_ENDPOINT}/assets/{asset.asset_id}"
-        headers = {
-            "Authorization": f"Bearer {token}",
-        }
+        url = f"{JIT_API_ENDPOINT}/asset/asset/{asset.asset_id}"
+        headers = get_request_headers(token)
         payload = {
             "teams": teams
         }
         response = requests.patch(url, json=payload, headers=headers)
         if response.status_code == 200:
-            logger.info(f"Teams added to asset '{asset.asset_id}' successfully.")
+            logger.info(f"Teams added to asset '{asset.asset_name}' successfully.")
         else:
             logger.error(f"Failed to add teams to asset '{asset.asset_id}'. Status code: "
                          f"{response.status_code}, {response.text}")
