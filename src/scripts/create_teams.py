@@ -74,7 +74,7 @@ def update_assets(token, organization):
     for asset in assets:
         teams_to_update = asset_to_team_map.get(asset.asset_name, [])
         if teams_to_update:
-            logger.info(f"Adding teams {teams_to_update} to asset {asset.asset_name}")
+            logger.info(f"Adding team(s) {teams_to_update} to asset {asset.asset_name}")
             add_teams_to_asset(token, asset, teams_to_update)
 
 
@@ -125,7 +125,7 @@ def process_teams(token, organization) -> List[str]:
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
     if teams_to_create:
-        logger.info(f"Creating {len(teams_to_create)} teams: {teams_to_create}")
+        logger.info(f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
         create_teams(token, teams_to_create)
     return teams_to_delete
 
@@ -169,7 +169,7 @@ def main():
     update_assets(jit_token, organization)
 
     if teams_to_delete:
-        logger.info(f"Deleting {len(teams_to_delete)} teams: {teams_to_delete}")
+        logger.info(f"Deleting {len(teams_to_delete)} team(s): {teams_to_delete}")
         delete_teams(jit_token, teams_to_delete)
 
 
