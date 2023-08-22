@@ -1,7 +1,7 @@
+from json.decoder import JSONDecodeError
 from unittest.mock import patch
 
 import pytest
-from unittest.mock import patch
 
 from src.scripts.create_teams import parse_input_file, process_teams, update_assets
 from src.shared.models import Organization, TeamStructure
@@ -36,14 +36,31 @@ def test_parse_input_file(json_data, expected_teams):
         assert len(result.teams) == expected_teams
 
 
-def test_parse_input_file_with_invalid_json():
-    with open("test_input.txt", "w") as file:
-        file.write('{"teams": [{"name": "team1", "members": [], "resources": []}')
+@pytest.mark.parametrize(
+    "invalid_file, json_data, should_raise, expected_exception",
+    [
+        ("", "", False, ''),  # No file provided
+        ("test_input.txt", "some text", False, ''),  # Wrong file type provided
+        ("test_input.json", '{"teams": [{"name": "team1", "members": [], "resources": []}', True, JSONDecodeError),
+        # Malformed JSON data
+        ("test_input.json", '{"name": "team1", "members": [], "resources": []}', True, KeyError),
+        # not an organization data
+    ],
+)
+def test_parse_input_file_with_invalid_json(invalid_file, json_data, should_raise, expected_exception):
+    if invalid_file:
+        with open(invalid_file, "w") as file:
+            file.write(json_data)
     with patch("src.scripts.create_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
-        mock_parse_args.return_value.file = "test_input.txt"
-        with pytest.raises(SystemExit) as exc_info:
-            parse_input_file()
-        assert exc_info.value.code == 1
+        mock_parse_args.return_value.file = invalid_file
+        if should_raise:
+            with pytest.raises(expected_exception) as exc_info:
+                parse_input_file()
+            assert isinstance(exc_info.value, expected_exception)
+        else:
+            with pytest.raises(SystemExit) as exc_info:
+                result = parse_input_file()
+                assert exc_info.value.code == 1
 
 
 def test_process_teams(organization):
