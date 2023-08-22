@@ -101,7 +101,7 @@ def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) 
     return get_different_items_in_lists(existing_team_names, topic_names)
 
 
-def process_teams(token, organization):
+def process_teams(token, organization) -> List[str]:
     """
     Process the teams in the organization and create or delete teams as necessary.
     We will delete the teams at a later stage to avoid possible synchronization issues.

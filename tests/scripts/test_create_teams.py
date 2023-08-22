@@ -39,12 +39,20 @@ def test_parse_input_file(json_data, expected_teams):
 @pytest.mark.parametrize(
     "invalid_file, json_data, should_raise, expected_exception",
     [
-        ("", "", False, ''),  # No file provided
-        ("test_input.txt", "some text", False, ''),  # Wrong file type provided
-        ("test_input.json", '{"teams": [{"name": "team1", "members": [], "resources": []}', True, JSONDecodeError),
-        # Malformed JSON data
-        ("test_input.json", '{"name": "team1", "members": [], "resources": []}', True, KeyError),
-        # not an organization data
+        ("", "", False, ""),  # No file provided
+        ("test_input.txt", "some text", False, ""),  # Wrong file type provided
+        (
+            "test_input.json",
+            '{"teams": [{"name": "team1", "members": [], "resources": []}',
+            True,
+            JSONDecodeError,
+        ),  # Malformed JSON data
+        (
+            "test_input.json",
+            '{"name": "team1", "members": [], "resources": []}',
+            True,
+            KeyError,
+        ),  # not an organization data
     ],
 )
 def test_parse_input_file_with_invalid_json(invalid_file, json_data, should_raise, expected_exception):
