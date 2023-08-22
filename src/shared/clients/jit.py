@@ -3,27 +3,20 @@ from typing import List
 from typing import Optional
 
 import requests
-from dotenv import load_dotenv
 from loguru import logger
 
 from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
 from src.shared.models import Asset, TeamAttributes
 
-# Load environment variables from .env file.
-load_dotenv(".env")
-JIT_API_ENDPOINT = os.getenv("JIT_API_ENDPOINT", JIT_DEFAULT_API_ENDPOINT)
-
-JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
-JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
-
 
 def get_jit_jwt_token() -> Optional[str]:
     payload = {
-        "clientId": JIT_CLIENT_ID,
-        "secret": JIT_CLIENT_SECRET
+        "clientId": os.getenv('JIT_CLIENT_ID'),
+        "secret": os.getenv('JIT_CLIENT_SECRET')
     }
 
-    response = requests.post(f"{JIT_API_ENDPOINT}/authentication/login", json=payload)
+    response = requests.post(f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/authentication/login",
+                             json=payload)
 
     if response.status_code == 200:
         return response.json().get('accessToken')
@@ -35,7 +28,7 @@ def get_jit_jwt_token() -> Optional[str]:
 def list_assets(token: str) -> List[Asset]:
     try:
         # Make a GET request to the asset API
-        url = f"{JIT_API_ENDPOINT}/asset"
+        url = f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/asset"
         headers = {
             "Authorization": f"Bearer {token}"
         }
@@ -66,7 +59,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
 
     try:
         # Make a GET request to the asset API
-        url = f"{JIT_API_ENDPOINT}/teams?limit=100"
+        url = f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/teams?limit=100"
 
         headers = get_request_headers(token)
         response = requests.get(url, headers=headers)
@@ -103,7 +96,7 @@ def delete_teams(token, team_names):
                 break
 
         if team_id:
-            url = f"{JIT_API_ENDPOINT}/teams/{team_id}"
+            url = f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/teams/{team_id}"
             headers = {"Authorization": f"Bearer {token}"}
 
             response = requests.delete(url, headers=headers)
@@ -119,7 +112,7 @@ def delete_teams(token, team_names):
 
 def create_teams(token, teams_to_create):
     try:
-        url = f"{JIT_API_ENDPOINT}/teams/"
+        url = f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/teams/"
         headers = get_request_headers(token)
         for team_name in teams_to_create:
             payload = {
@@ -144,7 +137,7 @@ def get_request_headers(token):
 
 def add_teams_to_asset(token, asset: Asset, teams: List[str]):
     try:
-        url = f"{JIT_API_ENDPOINT}/asset/asset/{asset.asset_id}"
+        url = f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/asset/asset/{asset.asset_id}"
         headers = get_request_headers(token)
         payload = {
             "teams": teams

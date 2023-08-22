@@ -15,6 +15,7 @@ from src.shared.models import Asset, TeamAttributes, Organization, TeamStructure
 
 # Load environment variables from .env file.
 load_dotenv()
+
 logger.remove()  # Remove default handler
 logger_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}"
 logger.add(sys.stderr, format=logger_format)

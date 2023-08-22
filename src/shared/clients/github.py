@@ -1,26 +1,19 @@
 import os
 
-from dotenv import load_dotenv
 from github import Github
 from loguru import logger
 
 from src.shared.models import TeamStructure, Resource, Organization
 
-# Load environment variables from .env file.
-load_dotenv(".env")
-
-ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")
-GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
-
 
 def get_teams_from_github_topics() -> Organization:
     try:
-        logger.info(f"Trying to communicate with Github to get information from Org: {ORGANIZATION_NAME}")
+        logger.info(f"Trying to communicate with Github to get information from Org: {os.getenv('ORGANIZATION_NAME')}")
         # Create a GitHub instance using the token
-        github = Github(GITHUB_TOKEN)
+        github = Github(os.getenv("GITHUB_API_TOKEN"))
 
         # Get the organization
-        organization = github.get_organization(ORGANIZATION_NAME)
+        organization = github.get_organization(os.getenv('ORGANIZATION_NAME'))
 
         # Dictionary to store team templates
         teams = {}
