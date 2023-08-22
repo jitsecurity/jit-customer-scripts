@@ -107,7 +107,27 @@ def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) 
 
 
 def get_desired_teams(assets: List[Asset], organization: Organization) -> List[str]:
-    team_wildcard_to_exclude = os.getenv("TEAM_WILDCARD_TO_EXCLUDE")
+    desired_teams = []
+    for team in organization.teams:
+        team_resources = []
+        for resource in team.resources:
+            if resource.type == "github_repo" and resource.name in [asset.asset_name for asset in assets]:
+                team_resources.append(resource.name)
+        if team_resources:
+            desired_teams.append(team.name)
+
+    wildcards_to_exclude = os.getenv("TEAM_WILDCARD_TO_EXCLUDE", "").split(",")
+    final_desired_teams = []
+    for team_name in desired_teams:
+        exclude_team = False
+        for wildcard in wildcards_to_exclude:
+            if wildcard and wildcard in team_name:
+                exclude_team = True
+                break
+        if not exclude_team:
+            final_desired_teams.append(team_name)
+
+    return final_desired_teams
 
 
 def process_teams(token, organization, assets: List[Asset]) -> List[str]:
