@@ -184,7 +184,7 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
     add_teams_to_asset("test_token", asset, teams)
 
     if status_code == 200:
-        mock_logger_info.assert_called_once_with("Teams added to asset 'asset_id' successfully.")
+        mock_logger_info.assert_called_once_with("Teams added to asset 'asset_name' successfully.")
     else:
         mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
 

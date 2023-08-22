@@ -157,7 +157,7 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
         }
         response = requests.patch(url, json=payload, headers=headers)
         if response.status_code == 200:
-            logger.info(f"Teams added to asset '{asset.asset_id}' successfully.")
+            logger.info(f"Teams added to asset '{asset.asset_name}' successfully.")
         else:
             logger.error(f"Failed to add teams to asset '{asset.asset_id}'. Status code: "
                          f"{response.status_code}, {response.text}")
