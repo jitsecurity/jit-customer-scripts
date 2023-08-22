@@ -36,6 +36,10 @@ jit-customer-scripts/
 - Python 3.x
 - Git
 
+## Generating API Keys
+* To generate Github Personal Access Token(PAT) refer to this [guide](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
+* To generate a Jit API Key Go to Settings -> Users & Permissions -> API Tokens in your Jit [dashboard](https://platform.jit.io). 
+
 ## Installation
 
 1. Clone the repository:
