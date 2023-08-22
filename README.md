@@ -136,6 +136,4 @@ Replace `path/to/teams.json` with the actual path to your JSON file.
 
 ## Development
 
-To override the default Frontegg authentication endpoint, you can set the `FRONTEGG_AUTH_ENDPOINT` environment variable. If the variable is not set, the default value will be used.
-
 To override Jit's API endpoint, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set, the default value will be used.

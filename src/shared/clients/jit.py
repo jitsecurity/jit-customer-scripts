@@ -22,12 +22,8 @@ def get_jit_jwt_token() -> Optional[str]:
         "clientId": JIT_CLIENT_ID,
         "secret": JIT_CLIENT_SECRET
     }
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json"
-    }
 
-    response = requests.post(f"{JIT_API_ENDPOINT}/authentication/login", json=payload, headers=headers)
+    response = requests.post(f"{JIT_API_ENDPOINT}/authentication/login", json=payload)
 
     if response.status_code == 200:
         return response.json().get('accessToken')
@@ -72,9 +68,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
         # Make a GET request to the asset API
         url = f"{JIT_API_ENDPOINT}/teams?limit=100"
 
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
+        headers = get_request_headers(token)
         response = requests.get(url, headers=headers)
         existing_teams = []
         # Check if the request was successful
