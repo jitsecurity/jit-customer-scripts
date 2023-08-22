@@ -1,6 +1,6 @@
 import pytest
 
-from src.shared.clients.frontegg import get_jwt_token, FRONTEGG_AUTH_URL
+from src.shared.clients.frontegg import get_jit_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams
 from src.shared.models import TeamObject, Asset, Organization, TeamTemplate, Resource
@@ -87,7 +87,7 @@ def test_get_jwt_token(status_code, expected_result, mocker):
 
     requests_post_mock = mocker.patch("requests.post", return_value=response_mock)
 
-    token = get_jwt_token()
+    token = get_jit_jwt_token()
 
     requests_post_mock.assert_called_once_with(
         FRONTEGG_AUTH_URL,

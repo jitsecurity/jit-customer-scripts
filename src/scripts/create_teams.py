@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from pydantic import ValidationError
 
-from src.shared.clients.frontegg import get_jwt_token
+from src.shared.clients.frontegg import get_jit_jwt_token
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams
 from src.shared.diff_tools import get_different_items_in_lists
 from src.shared.models import Asset, TeamObject, Organization, TeamTemplate
@@ -151,7 +151,7 @@ def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
 
 
 def main():
-    jit_token = get_jwt_token()
+    jit_token = get_jit_jwt_token()
     if not jit_token:
         logger.error("Failed to retrieve JWT token. Exiting...")
         return

@@ -15,7 +15,7 @@ JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
 JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
 
 
-def get_jwt_token() -> Optional[str]:
+def get_jit_jwt_token() -> Optional[str]:
     payload = {
         "clientId": JIT_CLIENT_ID,
         "secret": JIT_CLIENT_SECRET
