@@ -18,14 +18,17 @@ configure:
 	echo "JIT_CLIENT_SECRET=$$client_secret" >> .env; \
 	echo "GITHUB_API_TOKEN=$$github_token" >> .env
 
-run:
-	source venv-jit/bin/activate && python main.py
+create-teams:
+	source venv-jit/bin/activate && \
+	export PYTHONPATH=$(CURDIR) && \
+	 python src/utils/github_topics_to_json_file.py && \
+	  python src/scripts/create_teams.py --input teams.json
 
 help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  install   Install dependencies"
-	@echo "  configure Configure environment variables"
-	@echo "  run       Run the main script"
-	@echo "  help      Show this help message"
+	@echo " install        Install dependencies"
+	@echo " configure      Configure environment variables"
+	@echo " create-teams   Create teams based on input file"
+	@echo " help           Show this help message"
