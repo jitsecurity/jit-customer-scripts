@@ -84,14 +84,14 @@ This command is a convenience utility that extracts the teams to generate from G
 It runs these commands:
 ```bash
 python src/utils/github_topics_to_json_file.py
-python src/scripts/create_teams.py --input teams.json
+python src/scripts/create_teams.py teams.json
 ```
 
 This command will fetch the repository names and topics from the GitHub API and generate the JSON file. And then it will create the teams and update the assets.
 
 ### Using External JSON File
 
-You can also provide a JSON file containing team details using the `--input` argument. The JSON file should have the following structure:
+You can also provide a JSON file containing team details using a command line argument directly. The JSON file should have the following structure:
 
 ```json
 {
@@ -124,10 +124,10 @@ You can also provide a JSON file containing team details using the `--input` arg
 }
 ```
 
-To use the `--input` argument, run the following command:
+You can run the command like this:
 
 ```shell
-python scripts/create_teams.py --input path/to/teams.json
+python scripts/create_teams.py path/to/teams.json
 ```
 
 Replace `path/to/teams.json` with the actual path to your JSON file.

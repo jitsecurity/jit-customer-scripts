@@ -27,35 +27,30 @@ def parse_input_file() -> Organization:
     # Create the argument parser
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
 
-    # Add the --input argument
-    parser.add_argument("--input", help="Path to a JSON file")
+    # Add the file argument
+    parser.add_argument("file", help="Path to a JSON file")
 
     # Parse the command line arguments
     args = parser.parse_args()
 
-    # Check if the --input argument is provided
-    if args.input:
-        # Check if the file exists and is a JSON file
-        if not os.path.isfile(args.input):
-            logger.error("Error: File does not exist.")
-            sys.exit(1)
-        if not args.input.endswith(".json"):
-            logger.error("Error: File is not a JSON file.")
-            sys.exit(1)
+    # Check if the file exists and is a JSON file
+    if not os.path.isfile(args.file):
+        logger.error("Error: File does not exist.")
+        sys.exit(1)
+    if not args.file.endswith(".json"):
+        logger.error("Error: File is not a JSON file.")
+        sys.exit(1)
 
-        # Read the JSON file
-        with open(args.input, "r") as file:
-            json_data = file.read()
+    # Read the JSON file
+    with open(args.file, "r") as file:
+        json_data = file.read()
 
-        # Parse the JSON data
-        try:
-            data = json.loads(json_data)
-            return Organization(teams=[TeamStructure(**team) for team in data["teams"]])
-        except ValidationError as e:
-            logger.error(f"Failed to validate input file: {e}")
-            sys.exit(1)
-    else:
-        logger.error("No input file provided.")
+    # Parse the JSON data
+    try:
+        data = json.loads(json_data)
+        return Organization(teams=[TeamStructure(**team) for team in data["teams"]])
+    except ValidationError as e:
+        logger.error(f"Failed to validate input file: {e}")
         sys.exit(1)
 
 

@@ -22,7 +22,7 @@ create-teams:
 	source venv-jit/bin/activate && \
 	export PYTHONPATH=$(CURDIR) && \
 	 python src/utils/github_topics_to_json_file.py && \
-	  python src/scripts/create_teams.py --input teams.json
+	  python src/scripts/create_teams.py teams.json
 
 help:
 	@echo "Usage: make [target]"
