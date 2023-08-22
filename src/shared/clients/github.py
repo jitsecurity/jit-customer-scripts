@@ -6,7 +6,7 @@ from loguru import logger
 
 from src.shared.models import TeamTemplate, Resource, Organization
 
-# Load environment variables from .env file. make sure it's before you import modules.
+# Load environment variables from .env file.
 load_dotenv(".env")
 
 ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME")

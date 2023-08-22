@@ -8,7 +8,7 @@ from loguru import logger
 from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
 from src.shared.models import Asset, TeamObject
 
-# Load environment variables from .env file. make sure it's before you import modules.
+# Load environment variables from .env file.
 load_dotenv(".env")
 JIT_API_ENDPOINT = os.getenv("JIT_API_ENDPOINT", JIT_DEFAULT_API_ENDPOINT)
 

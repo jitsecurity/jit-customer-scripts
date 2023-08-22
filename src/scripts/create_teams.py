@@ -13,7 +13,7 @@ from src.shared.clients.jit import get_existing_teams, create_teams, list_assets
 from src.shared.diff_tools import get_different_items_in_lists
 from src.shared.models import Asset, TeamObject, Organization, TeamTemplate
 
-# Load environment variables from .env file. make sure it's before you import modules.
+# Load environment variables from .env file.
 load_dotenv()
 
 

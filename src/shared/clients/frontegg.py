@@ -7,7 +7,7 @@ from loguru import logger
 
 from src.shared.consts import FRONTEGG_DEFAULT_AUTH_URL
 
-# Load environment variables from .env file. make sure it's before you import modules.
+# Load environment variables from .env file.
 load_dotenv(".env")
 
 FRONTEGG_AUTH_URL = os.getenv("FRONTEGG_AUTH_URL", FRONTEGG_DEFAULT_AUTH_URL)
