@@ -40,7 +40,7 @@ class MockRepo:
          ])),
     ]
 )
-def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
+def test_get_teams_from_github_topics__happy_flow(mock_repos, expected_result, mocker):
     # Mocking Github instance methods
     github_mock = mocker.Mock()
     organization_mock = mocker.Mock()
@@ -57,7 +57,7 @@ def test_get_teams_from_github_topics(mock_repos, expected_result, mocker):
     assert repositories == expected_result
 
 
-def test_get_teams_from_github_topics_exception(mocker):
+def test_get_teams_from_github_topics__exception_from_github(mocker):
     # Mocking Github to raise an exception
     mocker.patch("src.shared.clients.github.Github",
                  side_effect=Exception("Sample exception"))  # Adjust the import path.
