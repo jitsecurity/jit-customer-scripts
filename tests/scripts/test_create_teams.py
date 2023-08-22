@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from unittest.mock import patch
 
 from src.scripts.create_teams import parse_input_file, process_teams, update_assets
 from src.shared.models import Organization, TeamStructure
@@ -16,24 +17,33 @@ def organization():
     )
 
 
-def test_parse_input_file():
-    # Test with valid JSON file
+@pytest.mark.parametrize(
+    "json_data, expected_teams",
+    [
+        ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1),
+        (
+                '{"teams": [{"name": "team1", "members": [], "resources": []}, '
+                '{"name": "team2", "members": [], "resources": []}]}',
+                2),
+    ],
+)
+def test_parse_input_file(json_data, expected_teams):
     with open("test_input.json", "w") as file:
-        file.write('{"teams": [{"name": "team1", "members": [], "resources": []}]}')
+        file.write(json_data)
     with patch("src.scripts.create_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
         mock_parse_args.return_value.file = "test_input.json"
         result = parse_input_file()
-        assert len(result.teams) == 1
-        assert result.teams[0].name == "team1"
+        assert len(result.teams) == expected_teams
 
-    # Test with invalid JSON file
-    with open("test_input.json", "w") as file:
-        file.write('{"teams": [{"name": "team1", "members": [], "resources": []}]}')
+
+def test_parse_input_file_with_invalid_json():
+    with open("test_input.txt", "w") as file:
+        file.write('{"teams": [{"name": "team1", "members": [], "resources": []}')
     with patch("src.scripts.create_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
-        mock_parse_args.return_value.file = "test_input.json"
-        with patch("sys.exit") as mock_exit:
+        mock_parse_args.return_value.file = "test_input.txt"
+        with pytest.raises(SystemExit) as exc_info:
             parse_input_file()
-            mock_exit.assert_called_once_with(1)
+        assert exc_info.value.code == 1
 
 
 def test_process_teams(organization):
