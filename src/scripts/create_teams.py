@@ -7,7 +7,6 @@ from typing import List, Dict
 from dotenv import load_dotenv
 from loguru import logger
 from pydantic import ValidationError
-
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams, \
     get_jit_jwt_token
 from src.shared.diff_tools import get_different_items_in_lists
@@ -58,7 +57,7 @@ def parse_input_file() -> Organization:
         sys.exit(1)
 
 
-def update_assets(token, organization):
+def update_assets(token, assets, organization):
     """
     Update the assets with the teams specified in the organization.
 
@@ -70,12 +69,12 @@ def update_assets(token, organization):
         None
     """
     logger.info("Updating assets.")
-    assets: List[Asset] = list_assets(token)
+
     asset_to_team_map = get_teams_for_assets(organization)
     for asset in assets:
         teams_to_update = asset_to_team_map.get(asset.asset_name, [])
         if teams_to_update:
-            logger.info(f"Adding team(s) {teams_to_update} to asset {asset.asset_name}")
+            logger.info(f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
             add_teams_to_asset(token, asset, teams_to_update)
 
 
@@ -107,7 +106,11 @@ def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) 
     return get_different_items_in_lists(existing_team_names, topic_names)
 
 
-def process_teams(token, organization) -> List[str]:
+def get_desired_teams(assets: List[Asset], organization: Organization) -> List[str]:
+    team_wildcard_to_exclude = os.getenv("TEAM_WILDCARD_TO_EXCLUDE")
+
+
+def process_teams(token, organization, assets: List[Asset]) -> List[str]:
     """
     Process the teams in the organization and create or delete teams as necessary.
     We will delete the teams at a later stage to avoid possible synchronization issues.
@@ -120,7 +123,8 @@ def process_teams(token, organization) -> List[str]:
         List[str]: The names of the teams to delete.
     """
     logger.info("Determining required changes in teams.")
-    desired_teams = [t.name for t in organization.teams]
+
+    desired_teams = get_desired_teams(assets, organization)
     existing_teams: List[TeamAttributes] = get_existing_teams(token)
     existing_team_names = [team.name for team in existing_teams]
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
@@ -165,13 +169,16 @@ def main():
         logger.error("Failed to parse input file. Exiting...")
         return
 
-    teams_to_delete = process_teams(jit_token, organization)
+    assets: List[Asset] = list_assets(jit_token)
 
-    update_assets(jit_token, organization)
+    teams_to_delete = process_teams(jit_token, organization, assets)
+
+    update_assets(jit_token, assets, organization)
 
     if teams_to_delete:
         logger.info(f"Deleting {len(teams_to_delete)} team(s): {teams_to_delete}")
         delete_teams(jit_token, teams_to_delete)
+    logger.info("Successfully completed teams sync.")
 
 
 if __name__ == '__main__':
