@@ -120,7 +120,7 @@ def process_teams(token, organization):
     Returns:
         List[str]: The names of the teams to delete.
     """
-    logger.info("Processing teams.")
+    logger.info("Determining required changes in teams.")
     desired_teams = [t.name for t in organization.teams]
     existing_teams: List[TeamObject] = get_existing_teams(token)
     existing_team_names = [team.name for team in existing_teams]
@@ -170,7 +170,9 @@ def main():
 
     update_assets(jit_token, organization)
 
-    delete_teams(jit_token, teams_to_delete)
+    if teams_to_delete:
+        logger.info(f"Deleting {len(teams_to_delete)} teams: {teams_to_delete}")
+        delete_teams(jit_token, teams_to_delete)
 
 
 if __name__ == '__main__':

@@ -27,6 +27,7 @@ def list_assets(token: str) -> List[Asset]:
             # Parse the response JSON
             assets = response.json()
 
+            logger.info("Retrieved assets successfully.")
             return [Asset(**asset) for asset in assets]
         else:
             logger.error(f"Failed to retrieve assets. Status code: {response.status_code}")
@@ -64,6 +65,7 @@ def get_existing_teams(token: str) -> List[TeamObject]:
                     logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                     return []
 
+            logger.info("Retrieved existing teams successfully.")
             return [TeamObject(**team) for team in existing_teams]
         else:
             logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
@@ -101,9 +103,7 @@ def delete_teams(token, team_names):
 def create_teams(token, teams_to_create):
     try:
         url = f"{JIT_API_ENDPOINT}/teams/"
-        headers = {
-            "Authorization": f"Bearer {token}",
-        }
+        headers = get_request_headers(token)
         for team_name in teams_to_create:
             payload = {
                 "name": team_name
@@ -118,12 +118,17 @@ def create_teams(token, teams_to_create):
         logger.error(f"Failed to create teams: {str(e)}")
 
 
+def get_request_headers(token):
+    headers = {
+        "Authorization": f"Bearer {token}",
+    }
+    return headers
+
+
 def add_teams_to_asset(token, asset: Asset, teams: List[str]):
     try:
         url = f"{JIT_API_ENDPOINT}/assets/{asset.asset_id}"
-        headers = {
-            "Authorization": f"Bearer {token}",
-        }
+        headers = get_request_headers(token)
         payload = {
             "teams": teams
         }

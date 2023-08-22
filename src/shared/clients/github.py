@@ -15,6 +15,7 @@ GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
 
 def get_teams_from_github_topics() -> Organization:
     try:
+        logger.info(f"Trying to communicate with Github to get information from Org: {ORGANIZATION_NAME}")
         # Create a GitHub instance using the token
         github = Github(GITHUB_TOKEN)
 
@@ -48,7 +49,8 @@ def get_teams_from_github_topics() -> Organization:
                     # Add the team template to the teams dictionary
                     teams[topic] = team_template
 
+        logger.info(f"Retrieved ({len(teams.keys())}) teams {list(teams.keys())} from GitHub successfully.")
         return Organization(teams=list(teams.values()))
     except Exception as e:
-        logger.error(f"Failed to retrieve teams: {str(e)}")
+        logger.error(f"Failed to retrieve teams from GitHub: {str(e)}")
         return Organization(teams=[])
