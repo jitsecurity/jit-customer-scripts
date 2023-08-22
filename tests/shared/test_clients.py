@@ -1,8 +1,8 @@
 import pytest
 
-from src.shared.clients.frontegg import get_jit_jwt_token, FRONTEGG_AUTH_URL
 from src.shared.clients.github import get_teams_from_github_topics
-from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams
+from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams, \
+    get_jit_jwt_token, JIT_API_ENDPOINT
 from src.shared.models import TeamObject, Asset, Organization, TeamTemplate, Resource
 
 
@@ -90,7 +90,7 @@ def test_get_jwt_token(status_code, expected_result, mocker):
     token = get_jit_jwt_token()
 
     requests_post_mock.assert_called_once_with(
-        FRONTEGG_AUTH_URL,
+        f"{JIT_API_ENDPOINT}/authentication/login",
         json={"clientId": None, "secret": None},
         headers={"accept": "application/json", "content-type": "application/json"}
     )
@@ -203,7 +203,7 @@ def test_delete_teams(mocker, status_code, existing_team_names, input_team_names
                       expected_warning):
     mock_existing_teams = [
         TeamObject(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
-                 name=team_name)
+                   name=team_name)
         for i, team_name in enumerate(existing_team_names)
     ]
 

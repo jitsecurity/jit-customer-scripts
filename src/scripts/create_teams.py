@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 from loguru import logger
 from pydantic import ValidationError
 
-from src.shared.clients.frontegg import get_jit_jwt_token
-from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams
+from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams, \
+    get_jit_jwt_token
 from src.shared.diff_tools import get_different_items_in_lists
 from src.shared.models import Asset, TeamObject, Organization, TeamTemplate
 
