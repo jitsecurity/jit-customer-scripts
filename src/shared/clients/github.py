@@ -49,7 +49,7 @@ def get_teams_from_github_topics() -> Organization:
                     # Add the team template to the teams dictionary
                     teams[topic] = team_template
 
-        logger.info(f"Retrieved ({len(teams.keys())}) teams {list(teams.keys())} from GitHub successfully.")
+        logger.info(f"Retrieved ({len(teams.keys())}) team(s) {list(teams.keys())} from GitHub successfully.")
         return Organization(teams=list(teams.values()))
     except Exception as e:
         logger.error(f"Failed to retrieve teams from GitHub: {str(e)}")
