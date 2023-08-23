@@ -77,7 +77,7 @@ def update_assets(token, assets: List[Asset], organization):
         if teams_to_update:
             excluded_teams = get_different_items_in_lists(teams_to_update, existing_teams)
             if excluded_teams:
-                logger.info(f"Excluding team(s) {excluded_teams} for asset '{asset.asset_name}'")
+                logger.info(f"Excluding topic(s) {excluded_teams} for asset '{asset.asset_name}'")
                 teams_to_update = list(set(teams_to_update) - set(excluded_teams))
             logger.info(f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
             add_teams_to_asset(token, asset, teams_to_update)
