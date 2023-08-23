@@ -17,8 +17,8 @@ configure:
 	echo "ORGANIZATION_NAME=$$org_name" > .env; \
 	echo "JIT_CLIENT_ID=$$client_id" >> .env; \
 	echo "JIT_CLIENT_SECRET=$$client_secret" >> .env; \
-	echo "GITHUB_API_TOKEN=$$github_token" >> .env
-	echo "TEAM_WILDCARD_TO_EXCLUDE=topics_to_exclude" >> .env
+	echo "GITHUB_API_TOKEN=$$github_token" >> .env; \
+	echo "TEAM_WILDCARD_TO_EXCLUDE=$$topics_to_exclude" >> .env
 
 create-teams:
 	source venv-jit/bin/activate && \
