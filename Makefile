@@ -13,7 +13,7 @@ configure:
 	read -p "Enter JIT API client ID: " client_id; \
 	read -p "Enter JIT API client secret: " client_secret; \
 	read -p "Enter GitHub Personal token (PAT): " github_token; \
-	read -p "Enter topic wildcards to exclude(example: *dev*): " topics_to_exclude; \
+	read -p "Enter comma separated topic wildcards to exclude the creation of teams(example: *dev*, *test*): " topics_to_exclude; \
 	echo "ORGANIZATION_NAME=$$org_name" > .env; \
 	echo "JIT_CLIENT_ID=$$client_id" >> .env; \
 	echo "JIT_CLIENT_SECRET=$$client_secret" >> .env; \
