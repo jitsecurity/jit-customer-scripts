@@ -107,6 +107,17 @@ def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) 
 
 
 def get_desired_teams(assets: List[Asset], organization: Organization) -> List[str]:
+    """
+    Get the desired teams based on the assets and organization.
+    Also filter out teams that match the TEAM_WILDCARD_TO_EXCLUDE environment variable.
+
+    Args:
+        assets (List[Asset]): The list of assets.
+        organization (Organization): The organization object.
+
+    Returns:
+        List[str]: The names of the desired teams.
+    """
     desired_teams = []
     for team in organization.teams:
         team_resources = []
