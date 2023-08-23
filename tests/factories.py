@@ -2,15 +2,14 @@ from collections import OrderedDict
 
 from faker import Faker
 from src.shared.consts import MANUAL_TEAM_SOURCE
+from polyfactory.factories.pydantic_factory import ModelFactory
+from src.shared.models import TeamAttributes, TeamStructure, Asset, Organization
 
 locales = OrderedDict([
     ('en-US', 1),
 ])
 Faker.seed(10)
 fake = Faker(locales)
-
-from polyfactory.factories.pydantic_factory import ModelFactory
-from src.shared.models import TeamAttributes
 
 
 class TeamAttributesFactory(ModelFactory):
@@ -28,5 +27,31 @@ class TeamAttributesFactory(ModelFactory):
     source = MANUAL_TEAM_SOURCE
 
 
-if __name__ == '__main__':
-    print(TeamAttributesFactory.batch(size=3))
+class TeamStructureFactory(ModelFactory):
+    __model__ = TeamStructure
+
+    tenant_id = fake.uuid4
+    team_id = fake.uuid4
+    parent_team_id = fake.uuid4
+    children_team_ids = []
+
+
+class AssetFactory(ModelFactory):
+    __model__ = Asset
+
+    tenant_id = fake.uuid4
+    id = fake.uuid4
+    name = fake.word
+    description = fake.sentence
+    team_id = fake.uuid4
+
+
+class OrganizationFactory(ModelFactory):
+    __model__ = Organization
+
+    tenant_id = fake.uuid4
+    id = fake.uuid4
+    name = fake.word
+    description = fake.sentence
+    assets = []
+    teams = []
