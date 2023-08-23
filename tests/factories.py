@@ -61,8 +61,3 @@ class AssetFactory(ModelFactory):
     is_archived = False
     created_at = fake.iso8601
     modified_at = fake.iso8601
-
-
-if __name__ == '__main__':
-    print(OrganizationFactory.batch(3))
-    print(AssetFactory.batch(3))
