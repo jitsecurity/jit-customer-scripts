@@ -4,8 +4,6 @@ from typing import Optional
 
 import requests
 from loguru import logger
-
-from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
 from src.shared.env_tools import get_jit_endpoint_base_url
 from src.shared.models import Asset, TeamAttributes
 
