@@ -3,7 +3,7 @@ import os
 from github import Github
 from loguru import logger
 
-from src.shared.models import TeamStructure, Resource, Organization
+from src.shared.models import TeamStructure, Resource, Organization, ResourceType
 
 
 def get_teams_from_github_topics() -> Organization:
@@ -33,11 +33,11 @@ def get_teams_from_github_topics() -> Organization:
                 # Check if the topic already exists in the teams dictionary
                 if topic in teams:
                     # Add the repository to the existing team
-                    teams[topic].resources.append(Resource(type="github_repo", name=repo_name))
+                    teams[topic].resources.append(Resource(type=ResourceType.GithubRepo, name=repo_name))
                 else:
                     # Create a new team template for the topic
                     team_template = TeamStructure(name=topic, members=[],
-                                                  resources=[Resource(type="github_repo", name=repo_name)])
+                                                  resources=[Resource(type=ResourceType.GithubRepo, name=repo_name)])
 
                     # Add the team template to the teams dictionary
                     teams[topic] = team_template

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams, \
     get_jit_jwt_token
 from src.shared.diff_tools import get_different_items_in_lists
-from src.shared.models import Asset, TeamAttributes, Organization, TeamStructure
+from src.shared.models import Asset, TeamAttributes, Organization, TeamStructure, ResourceType
 
 # Load environment variables from .env file.
 load_dotenv()
@@ -82,7 +82,8 @@ def update_assets(token, assets: List[Asset], organization):
             logger.info(f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
             add_teams_to_asset(token, asset, teams_to_update)
         else:
-            if asset.tags and "team" in [t.name for t in asset.tags]:
+            asset_has_teams_tag = asset.tags and "team" in [t.name for t in asset.tags]
+            if asset_has_teams_tag:
                 logger.info(f"Removing all teams from asset '{asset.asset_name}'")
                 add_teams_to_asset(token, asset, teams_to_update)
 
@@ -131,7 +132,7 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
     for team in organization.teams:
         team_resources = []
         for resource in team.resources:
-            if resource.type == "github_repo" and resource.name in [asset.asset_name for asset in assets]:
+            if resource.type == ResourceType.GithubRepo and resource.name in [asset.asset_name for asset in assets]:
                 team_resources.append(resource.name)
         if team_resources:
             desired_teams.append(team.name)
@@ -189,7 +190,7 @@ def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
     asset_to_team_map = {}
     for team in organization.teams:
         for resource in team.resources:
-            if resource.type == "github_repo":
+            if resource.type == ResourceType.GithubRepo:
                 asset_name = resource.name
                 if asset_name in asset_to_team_map:
                     asset_to_team_map[asset_name].append(team.name)

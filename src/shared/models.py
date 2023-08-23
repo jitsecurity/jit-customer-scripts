@@ -1,8 +1,12 @@
+from enum import Enum
 from typing import Optional, List
 
 from pydantic import BaseModel
-
 from src.shared.consts import MANUAL_TEAM_SOURCE
+
+
+class ResourceType(str, Enum):
+    GithubRepo = 'github_repo'
 
 
 class TeamAttributes(BaseModel):

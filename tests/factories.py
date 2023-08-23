@@ -3,7 +3,7 @@ from collections import OrderedDict
 from faker import Faker
 from polyfactory.factories.pydantic_factory import ModelFactory
 from src.shared.consts import MANUAL_TEAM_SOURCE
-from src.shared.models import TeamAttributes, TeamStructure, Asset, Organization, Resource
+from src.shared.models import TeamAttributes, TeamStructure, Asset, Organization, Resource, ResourceType
 
 locales = OrderedDict([
     ('en-US', 1),
@@ -29,7 +29,7 @@ class TeamAttributesFactory(ModelFactory):
 
 class ResourceFactory(ModelFactory):
     __model__ = Resource
-    type = "github_repo"
+    type = ResourceType.GithubRepo
     name = fake.word
 
 

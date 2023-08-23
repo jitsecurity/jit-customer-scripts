@@ -1,12 +1,9 @@
-import os
-
 import pytest
-
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams, \
     get_jit_jwt_token
-from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
-from src.shared.models import TeamAttributes, Asset, Organization, TeamStructure, Resource
+from src.shared.env_tools import get_jit_endpoint_base_url
+from src.shared.models import TeamAttributes, Asset, Organization, TeamStructure, Resource, ResourceType
 
 
 class MockRepo:
@@ -25,20 +22,22 @@ class MockRepo:
         ([MockRepo("repo1", [])], Organization(teams=[])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"])],
          Organization(teams=[
-             TeamStructure(name="topic1", members=[], resources=[Resource(type="github_repo", name="repo1")]),
-             TeamStructure(name="topic2", members=[], resources=[Resource(type="github_repo", name="repo2")])
+             TeamStructure(name="topic1", members=[],
+                           resources=[Resource(type=ResourceType.GithubRepo, name="repo1")]),
+             TeamStructure(name="topic2", members=[],
+                           resources=[Resource(type=ResourceType.GithubRepo, name="repo2")])
          ])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"]), MockRepo("repo3", ["topic2"]),
           MockRepo("repo4", ["topic1", "topic2"])],
          Organization(teams=[
              TeamStructure(name="topic1", members=[], resources=[
-                 Resource(type="github_repo", name="repo1"),
-                 Resource(type="github_repo", name="repo4")
+                 Resource(type=ResourceType.GithubRepo, name="repo1"),
+                 Resource(type=ResourceType.GithubRepo, name="repo4")
              ]),
              TeamStructure(name="topic2", members=[], resources=[
-                 Resource(type="github_repo", name="repo2"),
-                 Resource(type="github_repo", name="repo3"),
-                 Resource(type="github_repo", name="repo4")
+                 Resource(type=ResourceType.GithubRepo, name="repo2"),
+                 Resource(type=ResourceType.GithubRepo, name="repo3"),
+                 Resource(type=ResourceType.GithubRepo, name="repo4")
              ])
          ])),
     ]
@@ -93,7 +92,7 @@ def test_get_jwt_token(status_code, expected_result, mocker):
     token = get_jit_jwt_token()
 
     requests_post_mock.assert_called_once_with(
-        f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/authentication/login",
+        f"{get_jit_endpoint_base_url()}/authentication/login",
         json={"clientId": None, "secret": None}
     )
     assert token == expected_result
@@ -205,7 +204,7 @@ def test_delete_teams(mocker, status_code, existing_team_names, input_team_names
                       expected_warning):
     mock_existing_teams = [
         TeamAttributes(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
-                 name=team_name)
+                       name=team_name)
         for i, team_name in enumerate(existing_team_names)
     ]
 
