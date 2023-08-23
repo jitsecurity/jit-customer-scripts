@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
 from faker import Faker
-from src.shared.consts import MANUAL_TEAM_SOURCE
 from polyfactory.factories.pydantic_factory import ModelFactory
-from src.shared.models import TeamAttributes, TeamStructure, Asset, Organization
+from src.shared.consts import MANUAL_TEAM_SOURCE
+from src.shared.models import TeamAttributes, TeamStructure, Asset, Organization, Resource
 
 locales = OrderedDict([
     ('en-US', 1),
@@ -27,31 +27,42 @@ class TeamAttributesFactory(ModelFactory):
     source = MANUAL_TEAM_SOURCE
 
 
+class ResourceFactory(ModelFactory):
+    __model__ = Resource
+    type = "github_repo"
+    name = fake.word
+
+
 class TeamStructureFactory(ModelFactory):
     __model__ = TeamStructure
 
-    tenant_id = fake.uuid4
-    team_id = fake.uuid4
-    parent_team_id = fake.uuid4
-    children_team_ids = []
-
-
-class AssetFactory(ModelFactory):
-    __model__ = Asset
-
-    tenant_id = fake.uuid4
-    id = fake.uuid4
     name = fake.word
-    description = fake.sentence
-    team_id = fake.uuid4
+    members = []
+    resources = lambda: ResourceFactory.batch(3)
 
 
 class OrganizationFactory(ModelFactory):
     __model__ = Organization
 
+    teams = lambda: TeamStructureFactory.batch(3)
+
+
+class AssetFactory(ModelFactory):
+    __model__ = Asset
+
+    asset_id = fake.uuid4
     tenant_id = fake.uuid4
-    id = fake.uuid4
-    name = fake.word
-    description = fake.sentence
-    assets = []
-    teams = []
+    asset_type = "repo"
+    vendor = "github"
+    owner = "owner"
+    asset_name = fake.word
+    is_active = True
+    is_covered = True
+    is_archived = False
+    created_at = fake.iso8601
+    modified_at = fake.iso8601
+
+
+if __name__ == '__main__':
+    print(OrganizationFactory.batch(3))
+    print(AssetFactory.batch(3))
