@@ -3,31 +3,19 @@ from typing import List
 from typing import Optional
 
 import requests
-from dotenv import load_dotenv
 from loguru import logger
-
-from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
-from src.shared.models import Asset, TeamObject
-
-# Load environment variables from .env file.
-load_dotenv(".env")
-JIT_API_ENDPOINT = os.getenv("JIT_API_ENDPOINT", JIT_DEFAULT_API_ENDPOINT)
-
-JIT_CLIENT_SECRET = os.getenv("JIT_CLIENT_SECRET")
-JIT_CLIENT_ID = os.getenv("JIT_CLIENT_ID")
+from src.shared.env_tools import get_jit_endpoint_base_url
+from src.shared.models import Asset, TeamAttributes
 
 
 def get_jit_jwt_token() -> Optional[str]:
     payload = {
-        "clientId": JIT_CLIENT_ID,
-        "secret": JIT_CLIENT_SECRET
-    }
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json"
+        "clientId": os.getenv('JIT_CLIENT_ID'),
+        "secret": os.getenv('JIT_CLIENT_SECRET')
     }
 
-    response = requests.post(f"{JIT_API_ENDPOINT}/authentication/login", json=payload, headers=headers)
+    response = requests.post(f"{get_jit_endpoint_base_url()}/authentication/login",
+                             json=payload)
 
     if response.status_code == 200:
         return response.json().get('accessToken')
@@ -39,7 +27,7 @@ def get_jit_jwt_token() -> Optional[str]:
 def list_assets(token: str) -> List[Asset]:
     try:
         # Make a GET request to the asset API
-        url = f"{JIT_API_ENDPOINT}/asset"
+        url = f"{get_jit_endpoint_base_url()}/asset"
         headers = {
             "Authorization": f"Bearer {token}"
         }
@@ -60,7 +48,7 @@ def list_assets(token: str) -> List[Asset]:
         return []
 
 
-def get_existing_teams(token: str) -> List[TeamObject]:
+def get_existing_teams(token: str) -> List[TeamAttributes]:
     def _handle_resoponse(response, existing_teams):
         response = response.json()
         data = response['data']
@@ -70,11 +58,9 @@ def get_existing_teams(token: str) -> List[TeamObject]:
 
     try:
         # Make a GET request to the asset API
-        url = f"{JIT_API_ENDPOINT}/teams?limit=100"
+        url = f"{get_jit_endpoint_base_url()}/teams?limit=100"
 
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
+        headers = get_request_headers(token)
         response = requests.get(url, headers=headers)
         existing_teams = []
         # Check if the request was successful
@@ -89,7 +75,7 @@ def get_existing_teams(token: str) -> List[TeamObject]:
                     return []
 
             logger.info("Retrieved existing teams successfully.")
-            return [TeamObject(**team) for team in existing_teams]
+            return [TeamAttributes(**team) for team in existing_teams]
         else:
             logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
             return []
@@ -99,7 +85,7 @@ def get_existing_teams(token: str) -> List[TeamObject]:
 
 
 def delete_teams(token, team_names):
-    existing_teams: List[TeamObject] = get_existing_teams(token)
+    existing_teams: List[TeamAttributes] = get_existing_teams(token)
 
     for team_name in team_names:
         team_id = None
@@ -109,7 +95,7 @@ def delete_teams(token, team_names):
                 break
 
         if team_id:
-            url = f"{JIT_API_ENDPOINT}/teams/{team_id}"
+            url = f"{get_jit_endpoint_base_url()}/teams/{team_id}"
             headers = {"Authorization": f"Bearer {token}"}
 
             response = requests.delete(url, headers=headers)
@@ -125,7 +111,7 @@ def delete_teams(token, team_names):
 
 def create_teams(token, teams_to_create):
     try:
-        url = f"{JIT_API_ENDPOINT}/teams/"
+        url = f"{get_jit_endpoint_base_url()}/teams/"
         headers = get_request_headers(token)
         for team_name in teams_to_create:
             payload = {
@@ -150,14 +136,14 @@ def get_request_headers(token):
 
 def add_teams_to_asset(token, asset: Asset, teams: List[str]):
     try:
-        url = f"{JIT_API_ENDPOINT}/asset/asset/{asset.asset_id}"
+        url = f"{get_jit_endpoint_base_url()}/asset/asset/{asset.asset_id}"
         headers = get_request_headers(token)
         payload = {
             "teams": teams
         }
         response = requests.patch(url, json=payload, headers=headers)
         if response.status_code == 200:
-            logger.info(f"Teams added to asset '{asset.asset_name}' successfully.")
+            logger.info(f"Team(s) synced to asset '{asset.asset_name}' successfully.")
         else:
             logger.error(f"Failed to add teams to asset '{asset.asset_id}'. Status code: "
                          f"{response.status_code}, {response.text}")

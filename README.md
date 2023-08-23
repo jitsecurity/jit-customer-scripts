@@ -36,6 +36,13 @@ jit-customer-scripts/
 - Python 3.x
 - Git
 
+## Generating API Keys
+
+* To generate Github Personal Access Token(PAT) refer to
+  this [guide](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
+* To generate a Jit API Key Go to Settings -> Users & Permissions -> API Tokens in your
+  Jit [dashboard](https://platform.jit.io).
+
 ## Installation
 
 1. Clone the repository:
@@ -84,23 +91,29 @@ make create-teams
 
 This command is a convenience utility that extracts the teams to generate from Github topics. \
 It runs these commands:
+
 ```bash
 python src/utils/github_topics_to_json_file.py
-python src/scripts/create_teams.py --input teams.json
+python src/scripts/create_teams.py teams.json
 ```
 
-This command will fetch the repository names and topics from the GitHub API and generate the JSON file. And then it will create the teams and update the assets.
+This command will fetch the repository names and topics from the GitHub API and generate the JSON file. And then it will
+create the teams and update the assets.
 
 ### Using External JSON File
 
-You can also provide a JSON file containing team details using the `--input` argument. The JSON file should have the following structure:
+You can also provide a JSON file containing team details using a command line argument directly. The JSON file should
+have the following structure:
 
 ```json
 {
   "teams": [
     {
       "name": "Team 1",
-      "members": ["user1", "user2"],
+      "members": [
+        "user1",
+        "user2"
+      ],
       "resources": [
         {
           "type": "{resource_type}",
@@ -114,7 +127,10 @@ You can also provide a JSON file containing team details using the `--input` arg
     },
     {
       "name": "Team 2",
-      "members": ["user3", "user4"],
+      "members": [
+        "user3",
+        "user4"
+      ],
       "resources": [
         {
           "type": "{resource_type}",
@@ -126,16 +142,27 @@ You can also provide a JSON file containing team details using the `--input` arg
 }
 ```
 
-To use the `--input` argument, run the following command:
+You can run the command like this:
 
 ```shell
-python scripts/create_teams.py --input path/to/teams.json
+python scripts/create_teams.py path/to/teams.json
 ```
 
 Replace `path/to/teams.json` with the actual path to your JSON file.
 
+## Excluding Topics
+
+You can exclude certain topics from being considered when creating teams. \
+To exclude topics, you could add them in the `make configure` command or update this env var in
+the `.env` file: `TEAM_WILDCARD_TO_EXCLUDE`.
+
+For example, to exclude topics that contain the word "test", you can set the variable as follows:
+
+    TEAM_WILDCARD_TO_EXCLUDE=*test*
+
+This will exclude topics with names like "test", "test123", and "abc-testing".
+
 ## Development
 
-To override the default Frontegg authentication endpoint, you can set the `FRONTEGG_AUTH_ENDPOINT` environment variable. If the variable is not set, the default value will be used.
-
-To override Jit's API endpoint, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set, the default value will be used.
+To override Jit's API endpoint, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set, the
+default value will be used.

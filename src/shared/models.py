@@ -1,11 +1,15 @@
+from enum import Enum
 from typing import Optional, List
 
 from pydantic import BaseModel
-
 from src.shared.consts import MANUAL_TEAM_SOURCE
 
 
-class TeamObject(BaseModel):
+class ResourceType(str, Enum):
+    GithubRepo = 'github_repo'
+
+
+class TeamAttributes(BaseModel):
     tenant_id: str
     id: str
     created_at: str
@@ -16,6 +20,22 @@ class TeamObject(BaseModel):
     children_team_ids: List[str] = []
     score: int = 0
     source: str = MANUAL_TEAM_SOURCE
+
+
+class Resource(BaseModel):
+    type: str
+    name: str
+
+
+class TeamStructure(BaseModel):
+    name: str
+    members: List[str] = []
+    resources: List[Resource] = []
+
+
+class Tag(BaseModel):
+    name: str
+    value: str
 
 
 class Asset(BaseModel):
@@ -30,18 +50,8 @@ class Asset(BaseModel):
     is_archived: Optional[bool] = False
     created_at: str
     modified_at: str
-
-
-class Resource(BaseModel):
-    type: str
-    name: str
-
-
-class TeamTemplate(BaseModel):
-    name: str
-    members: List[str] = []
-    resources: List[Resource] = []
+    tags: Optional[List[Tag]] = []
 
 
 class Organization(BaseModel):
-    teams: List[TeamTemplate]
+    teams: List[TeamStructure]

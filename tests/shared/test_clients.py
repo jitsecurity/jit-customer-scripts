@@ -1,9 +1,9 @@
 import pytest
-
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams, \
-    get_jit_jwt_token, JIT_API_ENDPOINT
-from src.shared.models import TeamObject, Asset, Organization, TeamTemplate, Resource
+    get_jit_jwt_token
+from src.shared.env_tools import get_jit_endpoint_base_url
+from src.shared.models import TeamAttributes, Asset, Organization, TeamStructure, Resource, ResourceType
 
 
 class MockRepo:
@@ -22,20 +22,22 @@ class MockRepo:
         ([MockRepo("repo1", [])], Organization(teams=[])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"])],
          Organization(teams=[
-             TeamTemplate(name="topic1", members=[], resources=[Resource(type="github_repo", name="repo1")]),
-             TeamTemplate(name="topic2", members=[], resources=[Resource(type="github_repo", name="repo2")])
+             TeamStructure(name="topic1", members=[],
+                           resources=[Resource(type=ResourceType.GithubRepo, name="repo1")]),
+             TeamStructure(name="topic2", members=[],
+                           resources=[Resource(type=ResourceType.GithubRepo, name="repo2")])
          ])),
         ([MockRepo("repo1", ["topic1"]), MockRepo("repo2", ["topic2"]), MockRepo("repo3", ["topic2"]),
           MockRepo("repo4", ["topic1", "topic2"])],
          Organization(teams=[
-             TeamTemplate(name="topic1", members=[], resources=[
-                 Resource(type="github_repo", name="repo1"),
-                 Resource(type="github_repo", name="repo4")
+             TeamStructure(name="topic1", members=[], resources=[
+                 Resource(type=ResourceType.GithubRepo, name="repo1"),
+                 Resource(type=ResourceType.GithubRepo, name="repo4")
              ]),
-             TeamTemplate(name="topic2", members=[], resources=[
-                 Resource(type="github_repo", name="repo2"),
-                 Resource(type="github_repo", name="repo3"),
-                 Resource(type="github_repo", name="repo4")
+             TeamStructure(name="topic2", members=[], resources=[
+                 Resource(type=ResourceType.GithubRepo, name="repo2"),
+                 Resource(type=ResourceType.GithubRepo, name="repo3"),
+                 Resource(type=ResourceType.GithubRepo, name="repo4")
              ])
          ])),
     ]
@@ -90,9 +92,8 @@ def test_get_jwt_token(status_code, expected_result, mocker):
     token = get_jit_jwt_token()
 
     requests_post_mock.assert_called_once_with(
-        f"{JIT_API_ENDPOINT}/authentication/login",
-        json={"clientId": None, "secret": None},
-        headers={"accept": "application/json", "content-type": "application/json"}
+        f"{get_jit_endpoint_base_url()}/authentication/login",
+        json={"clientId": None, "secret": None}
     )
     assert token == expected_result
 
@@ -125,8 +126,8 @@ def test_list_assets(mocker, status_code, response_data, expected_assets):
             "metadata": {"after": "some_value"}}, {"data": [
             {"tenant_id": "tenant2", "id": "2", "created_at": "date3", "modified_at": "date4", "name": "name2"}],
             "metadata": {"after": None}}],
-         [TeamObject(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
-          TeamObject(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
+         [TeamAttributes(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
+          TeamAttributes(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
         ([400], [{}], []),
     ]
 )
@@ -184,7 +185,7 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
     add_teams_to_asset("test_token", asset, teams)
 
     if status_code == 200:
-        mock_logger_info.assert_called_once_with("Teams added to asset 'asset_name' successfully.")
+        mock_logger_info.assert_called_once_with("Team(s) synced to asset 'asset_name' successfully.")
     else:
         mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
 
@@ -202,8 +203,8 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
 def test_delete_teams(mocker, status_code, existing_team_names, input_team_names, expected_info, expected_error,
                       expected_warning):
     mock_existing_teams = [
-        TeamObject(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
-                   name=team_name)
+        TeamAttributes(tenant_id=f"tenant{i + 1}", id=str(i + 1), created_at=f"date{i + 1}", modified_at=f"date{i + 2}",
+                       name=team_name)
         for i, team_name in enumerate(existing_team_names)
     ]
 
