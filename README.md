@@ -48,7 +48,7 @@ jit-customer-scripts/
 1. Clone the repository:
 
    ```shell
-   git clone git@github.com:jitsecurity/jit-customer-scripts.git
+   git clone --branch 1.0 git@github.com:jitsecurity/jit-customer-scripts.git
    ```
 
 2. Change into the project directory:
