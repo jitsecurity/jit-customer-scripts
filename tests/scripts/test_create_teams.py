@@ -1,20 +1,26 @@
+from collections import OrderedDict
 from json.decoder import JSONDecodeError
 from unittest.mock import patch
 
 import pytest
+from faker import Faker
+from src.scripts.create_teams import parse_input_file, update_assets
+from src.scripts.create_teams import process_teams
+from src.shared.models import Organization
+from src.shared.models import TeamStructure
+from tests.factories import AssetFactory, TeamAttributesFactory, TeamStructureFactory
+from tests.factories import OrganizationFactory
 
-from src.scripts.create_teams import parse_input_file, process_teams, update_assets
-from src.shared.models import Organization, TeamStructure, TeamAttributes
+locales = OrderedDict([
+    ('en-US', 1),
+])
+Faker.seed(10)
+fake = Faker(locales)
 
 
 @pytest.fixture
 def organization():
-    return Organization(
-        teams=[
-            TeamStructure(name="team1", members=[], resources=[]),
-            TeamStructure(name="team2", members=[], resources=[]),
-        ]
-    )
+    return OrganizationFactory.batch(3)
 
 
 @pytest.mark.parametrize(
@@ -22,9 +28,9 @@ def organization():
     [
         ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1),
         (
-            '{"teams": [{"name": "team1", "members": [], "resources": []}, '
-            '{"name": "team2", "members": [], "resources": []}]}',
-            2,
+                '{"teams": [{"name": "team1", "members": [], "resources": []}, '
+                '{"name": "team2", "members": [], "resources": []}]}',
+                2,
         ),
     ],
 )
@@ -43,20 +49,20 @@ def test_parse_input_file(json_data, expected_teams):
         ("", "", False, ""),  # No file provided
         ("test_input.txt", "some text", False, ""),  # Wrong file type provided
         (
-            "test_input.json",
-            '{"teams": [{"name": "team1", "members": [], "resources": []}',
-            True,
-            JSONDecodeError,
+                "test_input.json",
+                '{"teams": [{"name": "team1", "members": [], "resources": []}',
+                True,
+                JSONDecodeError,
         ),  # Malformed JSON data
         (
-            "test_input.json",
-            '{"name": "team1", "members": [], "resources": []}',
-            True,
-            KeyError,
+                "test_input.json",
+                '{"name": "team1", "members": [], "resources": []}',
+                False,
+                "",
         ),  # not an organization data
     ],
 )
-def test_parse_input_file_with_invalid_json(invalid_file, json_data, should_raise, expected_exception):
+def test_parse_input_file__with_invalid_json(invalid_file, json_data, should_raise, expected_exception):
     if invalid_file:
         with open(invalid_file, "w") as file:
             file.write(json_data)
@@ -68,26 +74,45 @@ def test_parse_input_file_with_invalid_json(invalid_file, json_data, should_rais
             assert isinstance(exc_info.value, expected_exception)
         else:
             with pytest.raises(SystemExit) as exc_info:
-                result = parse_input_file()
+                parse_input_file()
                 assert exc_info.value.code == 1
 
 
+@pytest.fixture
+def data():
+    num_objects = 10
+    organization = Organization(teams=TeamStructureFactory.batch(num_objects))
+    assets = AssetFactory.batch(num_objects, asset_name=fake.word())
+    teams = TeamAttributesFactory.batch(num_objects)
+
+    for i in range(num_objects):
+        assets[i].asset_name = organization.teams[i].resources[0].name
+    for i in range(num_objects):
+        teams[i].name = [t.name for t in organization.teams][i]
+    return organization, assets, teams
+
+
 @pytest.mark.parametrize(
-    "existing_teams, expected_teams_to_create, expected_teams_to_delete",
+    "label, existing_teams_indexes, asset_indexes, len_expected_teams_to_delete",
     [
-        ([], ["team1", "team2"], []),
-        (["team1", "team2"], [], []),
-        ([], [], ["team1", "team2"]),
-        (["team1", "team2"], ["team3"], ["team1", "team2"]),
-    ],
+        ("No teams to create and no teams to delete", [], [], 0),
+        ("No teams to create and no teams to delete", "all", "all", 0),
+        ("No teams to create and teams to delete", "all", [0, 5], 8),
+        ("Teams to create and no teams to delete", [0, 5], "all", 0),
+    ]
 )
-def test_process_teams(organization, existing_teams, expected_teams_to_create, expected_teams_to_delete):
-    existing_teams = [TeamAttributes(name=team, attribute1=None, attribute2=None) for team in existing_teams]
+def test_process_teams(label, existing_teams_indexes, asset_indexes, data, len_expected_teams_to_delete):
+    organization, assets, existing_teams = data
+    existing_teams = [existing_teams[i] for i in
+                      existing_teams_indexes] if existing_teams_indexes != "all" else existing_teams
+    assets = [assets[i] for i in
+              asset_indexes] if asset_indexes != "all" else assets
+
     with patch("src.scripts.create_teams.get_existing_teams") as mock_get_existing_teams:
         with patch("src.scripts.create_teams.create_teams") as mock_create_teams:
             mock_get_existing_teams.return_value = existing_teams
-            teams_to_delete = process_teams("token", organization)
-            assert teams_to_delete == expected_teams_to_delete
+            teams_to_delete = process_teams("token", organization, assets)
+            assert len(teams_to_delete) == len_expected_teams_to_delete
 
 
 def test_update_assets(organization):
