@@ -94,8 +94,7 @@ def test_get_jwt_token(status_code, expected_result, mocker):
 
     requests_post_mock.assert_called_once_with(
         f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/authentication/login",
-        json={"clientId": None, "secret": None},
-        headers={"accept": "application/json", "content-type": "application/json"}
+        json={"clientId": None, "secret": None}
     )
     assert token == expected_result
 
