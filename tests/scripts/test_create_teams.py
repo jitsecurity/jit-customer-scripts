@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from json.decoder import JSONDecodeError
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pytest
 from faker import Faker
@@ -115,23 +115,13 @@ def test_process_teams(label, existing_teams_indexes, asset_indexes, data, len_e
             assert len(teams_to_delete) == len_expected_teams_to_delete
 
 
-def test_update_assets(organization):
+def test_update_assets(data):
     # Test with no assets
-    with patch("src.scripts.create_teams.list_assets") as mock_list_assets:
-        mock_list_assets.return_value = []
-        update_assets("token", organization)
+    organization, assets, teams = data
+    # with patch("src.scripts.create_teams.list_assets") as mock_list_assets:
+    # mock_list_assets.return_value = []
+    with patch("src.scripts.create_teams.add_teams_to_asset") as mock_add_teams_to_asset:
+        update_assets("token", assets, organization)
+        assert mock_add_teams_to_asset.call_count == 10
 
-    # Test with some assets
-    with patch("src.scripts.create_teams.list_assets") as mock_list_assets:
-        mock_list_assets.return_value = [
-            TeamStructure(name="team1", members=[], resources=[]),
-            TeamStructure(name="team2", members=[], resources=[]),
-        ]
-        with patch("src.scripts.create_teams.get_teams_for_assets") as mock_get_teams_for_assets:
-            mock_get_teams_for_assets.return_value = {
-                "asset1": ["team1"],
-                "asset2": ["team1", "team2"],
-            }
-            with patch("src.scripts.create_teams.add_teams_to_asset") as mock_add_teams_to_asset:
-                update_assets("token", organization)
-                assert mock_add_teams_to_asset.call_count == 2
+
