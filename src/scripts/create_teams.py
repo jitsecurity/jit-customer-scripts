@@ -57,7 +57,7 @@ def parse_input_file() -> Organization:
         sys.exit(1)
 
 
-def update_assets(token, assets, organization):
+def update_assets(token, assets: List[Asset], organization):
     """
     Update the assets with the teams specified in the organization.
 
@@ -71,11 +71,20 @@ def update_assets(token, assets, organization):
     logger.info("Updating assets.")
 
     asset_to_team_map = get_teams_for_assets(organization)
+    existing_teams: List[str] = [t.name for t in get_existing_teams(token)]
     for asset in assets:
         teams_to_update = asset_to_team_map.get(asset.asset_name, [])
         if teams_to_update:
+            excluded_teams = get_different_items_in_lists(teams_to_update, existing_teams)
+            if excluded_teams:
+                logger.info(f"Excluding team(s) {excluded_teams} for asset '{asset.asset_name}'")
+                teams_to_update = list(set(teams_to_update) - set(excluded_teams))
             logger.info(f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
             add_teams_to_asset(token, asset, teams_to_update)
+        else:
+            if asset.tags and "team" in [t.name for t in asset.tags]:
+                logger.info(f"Removing all teams from asset '{asset.asset_name}'")
+                add_teams_to_asset(token, asset, teams_to_update)
 
 
 def get_teams_to_create(topic_names: List[str], existing_team_names: List[str]) -> List[str]:
@@ -132,6 +141,7 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
     for team_name in desired_teams:
         exclude_team = False
         for wildcard in wildcards_to_exclude:
+            wildcard = wildcard.strip().strip("*")
             if wildcard and wildcard in team_name:
                 exclude_team = True
                 break

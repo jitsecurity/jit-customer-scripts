@@ -1,8 +1,11 @@
+import os
+
 import pytest
 
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams, \
-    get_jit_jwt_token, JIT_API_ENDPOINT
+    get_jit_jwt_token
+from src.shared.consts import JIT_DEFAULT_API_ENDPOINT
 from src.shared.models import TeamAttributes, Asset, Organization, TeamStructure, Resource
 
 
@@ -90,7 +93,7 @@ def test_get_jwt_token(status_code, expected_result, mocker):
     token = get_jit_jwt_token()
 
     requests_post_mock.assert_called_once_with(
-        f"{JIT_API_ENDPOINT}/authentication/login",
+        f"{os.getenv('JIT_API_ENDPOINT', JIT_DEFAULT_API_ENDPOINT)}/authentication/login",
         json={"clientId": None, "secret": None},
         headers={"accept": "application/json", "content-type": "application/json"}
     )

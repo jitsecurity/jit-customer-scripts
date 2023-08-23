@@ -29,6 +29,11 @@ class TeamStructure(BaseModel):
     resources: List[Resource] = []
 
 
+class Tag(BaseModel):
+    name: str
+    value: str
+
+
 class Asset(BaseModel):
     asset_id: str
     tenant_id: str
@@ -41,6 +46,7 @@ class Asset(BaseModel):
     is_archived: Optional[bool] = False
     created_at: str
     modified_at: str
+    tags: Optional[List[Tag]] = []
 
 
 class Organization(BaseModel):

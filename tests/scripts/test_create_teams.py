@@ -80,6 +80,7 @@ def test_parse_input_file__with_invalid_json(invalid_file, json_data, should_rai
 
 @pytest.fixture
 def data():
+    Faker.seed(10)
     num_objects = 10
     organization = Organization(teams=TeamStructureFactory.batch(num_objects))
     assets = AssetFactory.batch(num_objects, asset_name=fake.word())
@@ -95,7 +96,7 @@ def data():
 @pytest.mark.parametrize(
     "label, existing_teams_indexes, asset_indexes, len_expected_teams_to_delete",
     [
-        ("No teams to create and no teams to delete", [], [], 0),
+        ("No teams no assets", [], [], 0),
         ("No teams to create and no teams to delete", "all", "all", 0),
         ("No teams to create and teams to delete", "all", [0, 5], 8),
         ("Teams to create and no teams to delete", [0, 5], "all", 0),
