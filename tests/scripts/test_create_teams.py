@@ -1,13 +1,12 @@
 from collections import OrderedDict
 from json.decoder import JSONDecodeError
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 import pytest
 from faker import Faker
 from src.scripts.create_teams import parse_input_file, update_assets
 from src.scripts.create_teams import process_teams
 from src.shared.models import Organization
-from src.shared.models import TeamStructure
 from tests.factories import AssetFactory, TeamAttributesFactory, TeamStructureFactory
 from tests.factories import OrganizationFactory
 
@@ -124,5 +123,3 @@ def test_update_assets(data):
     with patch("src.scripts.create_teams.add_teams_to_asset") as mock_add_teams_to_asset:
         update_assets("token", assets, organization)
         assert mock_add_teams_to_asset.call_count == 10
-
-
