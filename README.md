@@ -43,12 +43,14 @@ jit-customer-scripts/
 * To generate a Jit API Key Go to Settings -> Users & Permissions -> API Tokens in your
   Jit [dashboard](https://platform.jit.io).
 
+> We recommend generating a fine-grained PAT with read-only access to the organization for the use of this script.
+
 ## Installation
 
 1. Clone the repository:
 
    ```shell
-   git clone git@github.com:jitsecurity/jit-customer-scripts.git
+   git clone --branch 1.0 git@github.com:jitsecurity/jit-customer-scripts.git
    ```
 
 2. Change into the project directory:
@@ -99,6 +101,8 @@ python src/scripts/create_teams.py teams.json
 
 This command will fetch the repository names and topics from the GitHub API and generate the JSON file. And then it will
 create the teams and update the assets.
+
+> We recommend using something like Github Actions and Github secrets to run this script on a schedule to make sure you are always synced.
 
 ### Using External JSON File
 
