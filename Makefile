@@ -1,12 +1,14 @@
+SHELL := /bin/bash
+
 install:
 	@if ! command -v python3 >/dev/null 2>&1; then \
-		echo "Python 3 is required but it's not installed. Please install Python 3 and try again." >&2; \
+		echo "Python 3 is required but it's not installed. Please install Python 3 (or ensure 'python3' command is available) and try again." >&2; \
 		exit 1; \
 	fi
 	@if [ ! -d "venv-jit" ]; then \
 		python3 -m venv venv-jit; \
 	fi
-	source venv-jit/bin/activate && pip install -r requirements.txt
+	. venv-jit/bin/activate && pip install -r requirements.txt
 
 configure:
 	@read -p "Enter GitHub organization name: " org_name; \
@@ -21,10 +23,10 @@ configure:
 	echo "TEAM_WILDCARD_TO_EXCLUDE=$$topics_to_exclude" >> .env
 
 create-teams:
-	source venv-jit/bin/activate && \
+	. venv-jit/bin/activate && \
 	export PYTHONPATH=$(CURDIR) && \
-	 python src/utils/github_topics_to_json_file.py && \
-	  python src/scripts/create_teams.py teams.json
+	 python3 src/utils/github_topics_to_json_file.py && \
+	  python3 src/scripts/create_teams.py teams.json
 
 help:
 	@echo "Usage: make [target]"
