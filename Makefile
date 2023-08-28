@@ -30,7 +30,7 @@ create-teams:
 
 setup-self-hosted-runner-centos:
     sudo yum install -y jq && \
-    chmod +x src/self-hosted-runners/scripts/setup-self-hosted-runner-centos.sh && \
+    chmod +x src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh && \
     ./src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh
 
 
