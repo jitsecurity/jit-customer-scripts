@@ -29,9 +29,9 @@ create-teams:
 	  python3 src/scripts/create_teams.py teams.json
 
 setup-self-hosted-runner-centos:
-    sudo yum install -y jq && \
-    chmod +x src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh && \
-    ./src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh
+	sudo yum install -y jq && \
+	chmod +x src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh && \
+	./src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh
 
 
 help:
