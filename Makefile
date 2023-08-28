@@ -28,6 +28,12 @@ create-teams:
 	 python3 src/utils/github_topics_to_json_file.py && \
 	  python3 src/scripts/create_teams.py teams.json
 
+setup-self-hosted-runner-centos:
+    sudo yum install -y jq && \
+    chmod +x src/self-hosted-runners/scripts/setup-self-hosted-runner-centos.sh && \
+    ./src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh
+
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
