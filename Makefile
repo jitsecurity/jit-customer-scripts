@@ -28,6 +28,14 @@ create-teams:
 	 python3 src/utils/github_topics_to_json_file.py && \
 	  python3 src/scripts/create_teams.py teams.json
 
+setup-self-hosted-runner-centos:
+	sudo yum install -y jq && \
+	chmod +x src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh && \
+	./src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh && \
+	chmod +x src/scripts/self-hosted-runners/install-github-runner-agent.sh && \
+	./src/scripts/self-hosted-runners/install-github-runner-agent.sh $(token) $(github_organization)
+
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
