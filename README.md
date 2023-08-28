@@ -14,6 +14,9 @@ jit-customer-scripts/
 ├── src/
 │   └── scripts/
 │       └── create_teams.py
+|       └── self-hosted-runners
+│            └── setup-self-hosted-runner-centos.sh
+│            └── ...
 ├── src/
 │   └── utils/
 │       └── github_topic_to_json_file.py
@@ -35,6 +38,19 @@ jit-customer-scripts/
 
 - Python 3.x
 - Git
+- make
+
+To make sure you have all you can run this command:
+
+#### Centos
+```shell
+sudo yum install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
+```
+
+#### Ubuntu
+```shell
+sudo apt install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
+```
 
 ## Generating API Keys
 
@@ -85,6 +101,8 @@ Before running the script, you need to configure the necessary environment varia
 
 ## Usage
 
+### Creating Teams from Github Topics
+
 To run the script and create teams and update assets, use the following command:
 
 ```shell
@@ -104,7 +122,7 @@ create the teams and update the assets.
 
 > We recommend using something like Github Actions and Github secrets to run this script on a schedule to make sure you are always synced.
 
-### Using External JSON File
+#### Using External JSON File
 
 You can also provide a JSON file containing team details using a command line argument directly. The JSON file should
 have the following structure:
@@ -154,7 +172,7 @@ python scripts/create_teams.py path/to/teams.json
 
 Replace `path/to/teams.json` with the actual path to your JSON file.
 
-## Excluding Topics
+#### Excluding Topics
 
 You can exclude certain topics from being considered when creating teams. \
 To exclude topics, you could add them in the `make configure` command or update this env var in
@@ -166,7 +184,20 @@ For example, to exclude topics that contain the word "test", you can set the var
 
 This will exclude topics with names like "test", "test123", and "abc-testing".
 
-## Development
+#### Development
 
 To override Jit's API endpoint, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set, the
 default value will be used.
+
+### Settings Up Self-Hosted Runners
+
+To setup self-hosted runners, use the following command:
+
+You need to take the self hosted runners token from the Github Actions page of your repository.
+`https://github.com/<your-github-org-name>/jit/settings/actions/runners`
+
+
+#### Running on CentOS
+```shell
+make setup-self-hosted-runner-centos token=<your-token> github_organization=<your-github-org-name>
+```
