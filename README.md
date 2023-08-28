@@ -201,3 +201,7 @@ You need to take the self hosted runners token from the Github Actions page of y
 ```shell
 make setup-self-hosted-runner-centos token=<your-token> github_organization=<your-github-org-name>
 ```
+
+You will be prompted to answer some questions about your runner. \
+When you complete this step, restart your EC2 machine. \
+The runner will be automatically started on boot.
