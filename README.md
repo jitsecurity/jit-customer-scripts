@@ -43,11 +43,13 @@ jit-customer-scripts/
 To make sure you have all you can run this command:
 
 #### Centos
+
 ```shell
 sudo yum install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
 ```
 
 #### Ubuntu
+
 ```shell
 sudo apt install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
 ```
@@ -120,7 +122,8 @@ python src/scripts/create_teams.py teams.json
 This command will fetch the repository names and topics from the GitHub API and generate the JSON file. And then it will
 create the teams and update the assets.
 
-> We recommend using something like Github Actions and Github secrets to run this script on a schedule to make sure you are always synced.
+> We recommend using something like Github Actions and Github secrets to run this script on a schedule to make sure you
+> are always synced.
 
 #### Using External JSON File
 
@@ -196,8 +199,8 @@ To setup self-hosted runners, use the following command:
 You need to take the self hosted runners token from the Github Actions page of your repository.
 `https://github.com/<your-github-org-name>/jit/settings/actions/runners`
 
-
 #### Running on CentOS
+
 ```shell
 make setup-self-hosted-runner-centos token=<your-token> github_organization=<your-github-org-name>
 ```
