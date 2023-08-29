@@ -64,4 +64,7 @@ help:
 	@echo " install        Install dependencies"
 	@echo " configure      Configure environment variables"
 	@echo " create-teams   Create teams based on input file"
+	@echo " self-hosted-runner centos   Set up self-hosted runner on CentOS"
+	@echo " self-hosted-runner ubuntu   Set up self-hosted runner on Ubuntu"
+	@echo " install-agent  Install GitHub runner agent"
 	@echo " help           Show this help message"
