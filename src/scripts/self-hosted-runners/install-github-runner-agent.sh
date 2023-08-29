@@ -9,7 +9,7 @@ github_organization="$2"
 jit_repo_name="$3"
 
 # Ensure both arguments are provided
-if [ -z "$user_token" ] || [ -z "$github_organization" ];  || [ -z "$jit_repo_name" ]; then
+if [ -z "$user_token" ] || [ -z "$github_organization" ] || [ -z "$jit_repo_name" ]; then
     echo "Usage: $0 <user_token> <github_organization>"
     exit 1
 fi
