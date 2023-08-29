@@ -1,8 +1,10 @@
 SHELL := /bin/bash
 
-.PHONY: install configure create-teams self-hosted-runner setup-runner install-agent centos ubuntu help
+.PHONY: sync-teams self-hosted-runner setup-runner install-agent centos ubuntu help
 
-install:
+
+sync-teams:
+ifeq ($(filter install,$(MAKECMDGOALS)),install)
 	@if ! command -v python3 >/dev/null 2>&1; then \
 		echo "Python 3 is required but it's not installed. Please install Python 3 (or ensure 'python3' command is available) and try again." >&2; \
 		exit 1; \
@@ -11,8 +13,8 @@ install:
 		python3 -m venv venv-jit; \
 	fi
 	. venv-jit/bin/activate && pip install -r requirements.txt
-
-configure:
+endif
+ifeq ($(filter configure,$(MAKECMDGOALS)),configure)
 	@read -p "Enter GitHub organization name: " org_name; \
 	read -p "Enter JIT API client ID: " client_id; \
 	read -p "Enter JIT API client secret: " client_secret; \
@@ -23,12 +25,21 @@ configure:
 	echo "JIT_CLIENT_SECRET=$$client_secret" >> .env; \
 	echo "GITHUB_API_TOKEN=$$github_token" >> .env; \
 	echo "TEAM_WILDCARD_TO_EXCLUDE=$$topics_to_exclude" >> .env
-
-create-teams:
+endif
+ifeq ($(filter run,$(MAKECMDGOALS)),run)
 	. venv-jit/bin/activate && \
 	export PYTHONPATH=$(CURDIR) && \
-	 python3 src/utils/github_topics_to_json_file.py && \
-	  python3 src/scripts/create_teams.py teams.json
+	python3 src/utils/github_topics_to_json_file.py && \
+	python3 src/scripts/create_teams.py teams.json
+endif
+
+install:
+	@echo installation complete
+configure:
+	@echo configuration complete
+run:
+	@echo run complete
+
 
 SELF_HOSTED_DOCKER_CENTOS_SCRIPT := src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh
 SELF_HOSTED_DOCKER_UBUNTU_SCRIPT := src/scripts/self-hosted-runners/setup-self-hosted-runner-ubuntu.sh
