@@ -9,8 +9,8 @@ github_organization="$2"
 
 # Ensure both arguments are provided
 if [ -z "$runner_token" ] || [ -z "$github_organization" ]; then
-    echo "Usage: $0 <runner_token> <github_organization>"
-    exit 1
+  echo "Usage: $0 <runner_token> <github_organization>"
+  exit 1
 fi
 
 mkdir ~/actions-runner && cd ~/actions-runner
@@ -20,4 +20,3 @@ tar xzf ./actions-runner-linux-x64-2.308.0.tar.gz
 ./config.sh --url "https://github.com/$github_organization" --token "$runner_token"
 
 sudo ./svc.sh install $USER
-
