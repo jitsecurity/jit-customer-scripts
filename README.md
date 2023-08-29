@@ -1,54 +1,65 @@
 # Jit Customer Scripts README
 
 The README provided is an extensive guide on how to use the `jit-customer-scripts` project. \
-The Makefile described is composed of commands that ease the installation, configuration, and running of the scripts within the project. \
+The Makefile described is composed of commands that ease the installation, configuration, and running of the scripts
+within the project. \
 Here's a breakdown of the provided README and Makefile:
 
 ## README Overview
 
-- **Introduction**: The README begins with a brief description of the project and its purpose, which is to aid customers in creating teams and updating assets based on a given JSON file.
+- **Introduction**: The README begins with a brief description of the project and its purpose, which is to aid customers
+  in creating teams and updating assets based on a given JSON file.
 - **Project Structure**: An organized visual representation of the project's file structure is provided.
-- **Prerequisites**: Lists necessary software that should be installed before starting, along with instructions for CentOS and Ubuntu to prepare the environment.
+- **Prerequisites**: Lists necessary software that should be installed before starting, along with instructions for
+  CentOS and Ubuntu to prepare the environment.
 - **Generating API Keys**: Guidance on how to generate the necessary Github Personal Access Token and Jit API Key.
 - **Installation**: Steps on cloning the repository and setting up the project.
 - **Configuration**: Instructions on how to configure the necessary environment variables for the script.
 - **Usage**:
-  - **Creating Teams from Github Topics**: Details on how to use the script to create teams and update assets from GitHub topics.
-    - **Using External JSON File**: Allows users to directly provide a JSON file containing team details.
-    - **Excluding Topics**: Instructions on excluding specific topics when creating teams.
-  - **Setting Up Self-Hosted Runners**: Guidance on setting up GitHub self-hosted runners on both CentOS and Ubuntu.
-  - **Help**: Instruction on getting help with the Makefile commands.
-  - **Development**: A small note about overriding the Jit API endpoint.
+    - **Creating Teams from Github Topics**: Details on how to use the script to create teams and update assets from
+      GitHub topics.
+        - **Using External JSON File**: Allows users to directly provide a JSON file containing team details.
+        - **Excluding Topics**: Instructions on excluding specific topics when creating teams.
+    - **Setting Up Self-Hosted Runners**: Guidance on setting up GitHub self-hosted runners on both CentOS and Ubuntu.
+    - **Help**: Instruction on getting help with the Makefile commands.
+    - **Development**: A small note about overriding the Jit API endpoint.
 
 ## Makefile Overview
 
-The Makefile consists of several targets to facilitate the installation, configuration, and running of scripts. Here's a breakdown:
+The Makefile consists of several targets to facilitate the installation, configuration, and running of scripts. Here's a
+breakdown:
 
 ### sync-teams
+
 This target has three sub-targets:
+
 - `install`: Ensures Python 3 is installed, sets up a virtual environment, and installs the required dependencies.
-- `configure`: Prompts the user to input configuration details like GitHub organization name, API client ID, client secret, and GitHub token. The responses are written to a `.env` file.
+- `configure`: Prompts the user to input configuration details like GitHub organization name, API client ID, client
+  secret, and GitHub token. The responses are written to a `.env` file.
 - `run`: Activates the virtual environment and runs two Python scripts in succession to generate teams.
 
 ### self-hosted-runner
+
 This target and its sub-targets facilitate setting up a GitHub self-hosted runner:
+
 - `check-root`: Ensures the script isn't run as root.
 - `setup-runner`: Checks the platform (CentOS or Ubuntu) and runs the appropriate setup script.
 - `install-agent`: Installs the GitHub runner agent.
 
 ### Help
+
 - `help`: Displays available targets and their brief descriptions.
 
 ## Hierarchical Structure of the Commands:
 
 1. **sync-teams**
-   - install
-   - configure
-   - run
+    - install
+    - configure
+    - run
 
 2. **self-hosted-runner**
-   - centos
-   - ubuntu
+    - centos
+    - ubuntu
 
 ## Project Structure
 
@@ -79,13 +90,11 @@ jit-customer-scripts/
 - `Makefile`: Provides commands to help with project setup and execution.
 - `README.md`: This file.
 
-
 ## Prerequisites
 
 - Python 3.x
 - Git
 - make
-
 
 To make sure you have all you can run this command:
 
@@ -214,7 +223,6 @@ This will exclude topics with names like "test", "test123", and "abc-testing".
 
 To override Jit's API endpoint, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set, the
 default value will be used.
-
 
 ## Settings Up Self-Hosted Runners
 
