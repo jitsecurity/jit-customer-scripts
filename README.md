@@ -202,9 +202,32 @@ You need to take the self hosted runners token from the Github Actions page of y
 #### Running on CentOS
 
 ```shell
-make setup-self-hosted-runner-centos token=<your-token> github_organization=<your-github-org-name>
+make self-hosted-runner centos runner_token=<runner-token> github_org=<github-organization> jit_repo=<jit-repo-name>
 ```
 
 You will be prompted to answer some questions about your runner. \
 When you complete this step, restart your EC2 machine. \
 The runner will be automatically started on boot.
+
+Replace `<runner-token>`, `<github-organization>`, and `<jit-repo-name>` with the appropriate values.
+
+#### Running on Ubuntu
+
+```shell
+make self-hosted-runner ubuntu runner_token=<runner-token> github_org=<github-organization> jit_repo=<jit-repo-name>
+```
+
+You will be prompted to answer some questions about your runner. \
+When you complete this step, restart your EC2 machine. \
+The runner will be automatically started on boot.
+
+Replace `<runner-token>`, `<github-organization>`, and `<jit-repo-name>` with the appropriate values.
+
+### Help
+
+To see the available commands and their descriptions, use the following command:
+
+```shell
+make help
+```
+
