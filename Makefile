@@ -42,7 +42,7 @@ ifeq ($(filter centos,$(MAKECMDGOALS)),centos)
 	sudo yum install -y jq
 	chmod +x $(SELF_HOSTED_DOCKER_CENTOS_SCRIPT)
 	./$(SELF_HOSTED_DOCKER_CENTOS_SCRIPT)
-else ifeq ($(filter centos,$(MAKECMDGOALS)),ubuntu)
+else ifeq ($(filter ubuntu,$(MAKECMDGOALS)),ubuntu)
 	chmod +x $(SELF_HOSTED_DOCKER_UBUNTU_SCRIPT)
 	./$(SELF_HOSTED_DOCKER_UBUNTU_SCRIPT)
 endif
