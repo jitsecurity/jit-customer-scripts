@@ -214,14 +214,14 @@ Replace `<runner-token>`, `<github-organization>`, and `<jit-repo-name>` with th
 #### Running on Ubuntu
 
 ```shell
-make self-hosted-runner ubuntu runner_token=<runner-token> github_org=<github-organization> jit_repo=<jit-repo-name>
+make self-hosted-runner ubuntu runner_token=<runner-token> github_org=<github-organization>
 ```
 
 You will be prompted to answer some questions about your runner. \
 When you complete this step, restart your EC2 machine. \
 The runner will be automatically started on boot.
 
-Replace `<runner-token>`, `<github-organization>`, and `<jit-repo-name>` with the appropriate values.
+Replace `<runner-token>` and `<github-organization>` with the appropriate values.
 
 ### Help
 

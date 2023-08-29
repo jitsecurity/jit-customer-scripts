@@ -55,7 +55,7 @@ endif
 
 install-agent:
 	chmod +x $(SELF_HOSTED_RUNNER_SCRIPT)
-	./$(SELF_HOSTED_RUNNER_SCRIPT) $(runner_token) $(github_org) $(jit_repo)
+	./$(SELF_HOSTED_RUNNER_SCRIPT) $(runner_token) $(github_org)
 
 centos:
 	@echo installed on centos
@@ -70,7 +70,7 @@ help:
 	@echo " install        Install dependencies"
 	@echo " configure      Configure environment variables"
 	@echo " create-teams   Create teams based on input file"
-	@echo " self-hosted-runner centos runner_token=<runner-token> github_org=<github-organization> jit_repo=<jit-repo-name> Set up self-hosted runner on CentOS"
-	@echo " self-hosted-runner ubuntu runner_token=<runner-token> github_org=<github-organization> jit_repo=<jit-repo-name> Set up self-hosted runner on Ubuntu"
+	@echo " self-hosted-runner centos runner_token=<runner-token> github_org=<github-organization> Set up self-hosted runner on CentOS"
+	@echo " self-hosted-runner ubuntu runner_token=<runner-token> github_org=<github-organization> Set up self-hosted runner on Ubuntu"
 	@echo " install-agent  Install GitHub runner agent"
 	@echo " help           Show this help message"
