@@ -66,6 +66,3 @@ systemctl --user start docker-rootless
 sudo loginctl enable-linger $(whoami)
 
 echo "Docker in rootless mode has been installed and set to start on boot."
-
-sudo apt install libicu -y
-echo "Installed libicu Dotnet for the github agent"
