@@ -14,15 +14,15 @@ fi
 # Check for curl
 if ! command -v curl &> /dev/null; then
     echo "Installing curl..."
-    sudo apt-get update
-    sudo apt-get install -y curl
+    sudo apt update
+    sudo apt install -y curl
 fi
 
 # Check for iptables
 if ! command -v iptables &> /dev/null; then
     echo "Installing iptables..."
-    sudo apt-get update
-    sudo apt-get install -y iptables
+    sudo apt update
+    sudo apt install -y iptables
 fi
 
 # Download Docker installation script
@@ -67,5 +67,5 @@ sudo loginctl enable-linger $(whoami)
 
 echo "Docker in rootless mode has been installed and set to start on boot."
 
-sudo apt-get install libicu -y
+sudo apt install libicu -y
 echo "Installed libicu Dotnet for the github agent"
