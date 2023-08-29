@@ -20,5 +20,5 @@ tar xzf ./actions-runner-linux-x64-2.308.0.tar.gz
 # Create the runner and start the configuration experience
 ./config.sh --url "https://github.com/$github_organization/$jit_repo_name" --token "$runner_token"
 
-sudo ./svc.sh install ec2-user
-sudo ./svc.sh start
+sudo ./svc.sh install $USER
+

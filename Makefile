@@ -35,7 +35,13 @@ SELF_HOSTED_DOCKER_UBUNTU_SCRIPT := src/scripts/self-hosted-runners/setup-self-h
 SELF_HOSTED_RUNNER_SCRIPT := src/scripts/self-hosted-runners/install-github-runner-agent.sh
 
 
-self-hosted-runner: setup-runner install-agent
+self-hosted-runner: check-root setup-runner install-agent
+
+check-root:
+	@if [ "$$UID" -eq 0 ]; then \
+        echo "Error: This script should not be run as root."; \
+        exit 1; \
+    fi
 
 setup-runner:
 ifeq ($(filter centos,$(MAKECMDGOALS)),centos)

@@ -66,9 +66,3 @@ systemctl --user start docker-rootless
 sudo loginctl enable-linger $(whoami)
 
 echo "Docker in rootless mode has been installed and set to start on boot."
-
-if ! id -u ec2-user >/dev/null 2>&1; then
-    sudo useradd -m -s /bin/bash ec2-user
-    sudo passwd ec2-user
-fi
-echo "User ec2-user has been created."
