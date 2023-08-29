@@ -10,20 +10,20 @@ if [ "$EUID" -eq 0 ]; then
 fi
 
 # Install required packages only if they aren't already installed
-
+sudo apt update
 # Check for curl
 if ! command -v curl &> /dev/null; then
     echo "Installing curl..."
-    sudo apt update
     sudo apt install -y curl
 fi
 
 # Check for iptables
 if ! command -v iptables &> /dev/null; then
     echo "Installing iptables..."
-    sudo apt update
     sudo apt install -y iptables
 fi
+
+sudo apt install -y uidmap
 
 # Download Docker installation script
 echo "Installing Docker in rootless mode..."
