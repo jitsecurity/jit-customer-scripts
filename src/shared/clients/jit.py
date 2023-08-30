@@ -4,6 +4,7 @@ from typing import Optional
 
 import requests
 from loguru import logger
+from src.shared.consts import MANUAL_TEAM_SOURCE
 from src.shared.env_tools import get_jit_endpoint_base_url
 from src.shared.models import Asset, TeamAttributes
 
@@ -89,12 +90,15 @@ def delete_teams(token, team_names):
 
     for team_name in team_names:
         team_id = None
+        selected_team = None
         for team in existing_teams:
             if team.name == team_name:
                 team_id = team.id
+                selected_team = team
                 break
 
-        if team_id:
+        # We only delete teams that are manually created
+        if team_id and selected_team and selected_team['source'] == MANUAL_TEAM_SOURCE:
             url = f"{get_jit_endpoint_base_url()}/teams/{team_id}"
             headers = {"Authorization": f"Bearer {token}"}
 
