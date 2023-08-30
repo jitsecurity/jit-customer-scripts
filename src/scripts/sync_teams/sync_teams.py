@@ -218,7 +218,7 @@ def main():
     update_assets(jit_token, assets, organization)
 
     if teams_to_delete:
-        logger.info(f"Deleting {len(teams_to_delete)} team(s): {teams_to_delete}")
+        logger.info(f"Checking which team(s) to delete from: {teams_to_delete}")
         delete_teams(jit_token, teams_to_delete)
     logger.info("Successfully completed teams sync.")
 

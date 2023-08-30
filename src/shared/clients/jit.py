@@ -98,17 +98,20 @@ def delete_teams(token, team_names):
                 break
 
         # We only delete teams that are manually created
-        if team_id and selected_team and selected_team.source == MANUAL_TEAM_SOURCE:
-            url = f"{get_jit_endpoint_base_url()}/teams/{team_id}"
-            headers = {"Authorization": f"Bearer {token}"}
+        if team_id:
+            if selected_team and selected_team.source == MANUAL_TEAM_SOURCE:
+                url = f"{get_jit_endpoint_base_url()}/teams/{team_id}"
+                headers = {"Authorization": f"Bearer {token}"}
 
-            response = requests.delete(url, headers=headers)
+                response = requests.delete(url, headers=headers)
 
-            if response.status_code == 204:
-                logger.info(f"Team '{team_name}' deleted successfully.")
+                if response.status_code == 204:
+                    logger.info(f"Team '{team_name}' deleted successfully.")
+                else:
+                    logger.error(
+                        f"Failed to delete team '{team_name}'. Status code: {response.status_code}, {response.text}")
             else:
-                logger.error(
-                    f"Failed to delete team '{team_name}'. Status code: {response.status_code}, {response.text}")
+                logger.info(f"Team '{team_name}' is not manually created. Skipping deletion.")
         else:
             logger.warning(f"Team '{team_name}' not found.")
 
