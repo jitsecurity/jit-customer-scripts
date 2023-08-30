@@ -59,7 +59,8 @@ The project has the following structure:
 jit-customer-scripts/
 ├── src/
 │   └── scripts/
-│       └── create_teams.py
+│       └── sync_teams
+│            └── sync_teams.py
 |       └── self-hosted-runners
 │            └── setup-rootless-docker-centos.sh
 │            └── setup-rootless-docker-ubuntu.sh
