@@ -4,6 +4,7 @@ from typing import Optional
 
 import requests
 from loguru import logger
+from src.shared.consts import MANUAL_TEAM_SOURCE
 from src.shared.env_tools import get_jit_endpoint_base_url
 from src.shared.models import Asset, TeamAttributes
 
@@ -89,22 +90,28 @@ def delete_teams(token, team_names):
 
     for team_name in team_names:
         team_id = None
+        selected_team = None
         for team in existing_teams:
             if team.name == team_name:
                 team_id = team.id
+                selected_team = team
                 break
 
+        # We only delete teams that are manually created
         if team_id:
-            url = f"{get_jit_endpoint_base_url()}/teams/{team_id}"
-            headers = {"Authorization": f"Bearer {token}"}
+            if selected_team and selected_team.source == MANUAL_TEAM_SOURCE:
+                url = f"{get_jit_endpoint_base_url()}/teams/{team_id}"
+                headers = {"Authorization": f"Bearer {token}"}
 
-            response = requests.delete(url, headers=headers)
+                response = requests.delete(url, headers=headers)
 
-            if response.status_code == 204:
-                logger.info(f"Team '{team_name}' deleted successfully.")
+                if response.status_code == 204:
+                    logger.info(f"Team '{team_name}' deleted successfully.")
+                else:
+                    logger.error(
+                        f"Failed to delete team '{team_name}'. Status code: {response.status_code}, {response.text}")
             else:
-                logger.error(
-                    f"Failed to delete team '{team_name}'. Status code: {response.status_code}, {response.text}")
+                logger.info(f"Team '{team_name}' is not manually created. Skipping deletion.")
         else:
             logger.warning(f"Team '{team_name}' not found.")
 
