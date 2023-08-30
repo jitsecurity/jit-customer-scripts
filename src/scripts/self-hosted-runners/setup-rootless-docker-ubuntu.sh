@@ -3,24 +3,18 @@
 # Exit on error
 set -e
 
-# Check if script is run as root
-if [ "$EUID" -eq 0 ]; then
-    echo "Please run this script as a non-root user."
-    exit 1
-fi
-
 # Install required packages only if they aren't already installed
 sudo apt update
 # Check for curl
 if ! command -v curl &> /dev/null; then
-    echo "Installing curl..."
-    sudo apt install -y curl
+  echo "Installing curl..."
+  sudo apt install -y curl
 fi
 
 # Check for iptables
 if ! command -v iptables &> /dev/null; then
-    echo "Installing iptables..."
-    sudo apt install -y iptables
+  echo "Installing iptables..."
+  sudo apt install -y iptables
 fi
 
 sudo apt install -y uidmap

@@ -30,7 +30,7 @@ ifeq ($(filter run,$(MAKECMDGOALS)),run)
 	. venv-jit/bin/activate && \
 	export PYTHONPATH=$(CURDIR) && \
 	python3 src/utils/github_topics_to_json_file.py && \
-	python3 src/scripts/create_teams.py teams.json
+	python3 src/scripts/sync_teams/sync_teams.py teams.json
 endif
 
 install:
@@ -41,8 +41,8 @@ run:
 	@echo run complete
 
 
-SELF_HOSTED_DOCKER_CENTOS_SCRIPT := src/scripts/self-hosted-runners/setup-self-hosted-runner-centos.sh
-SELF_HOSTED_DOCKER_UBUNTU_SCRIPT := src/scripts/self-hosted-runners/setup-self-hosted-runner-ubuntu.sh
+SELF_HOSTED_DOCKER_CENTOS_SCRIPT := src/scripts/self-hosted-runners/setup-rootless-docker-centos.sh
+SELF_HOSTED_DOCKER_UBUNTU_SCRIPT := src/scripts/self-hosted-runners/setup-rootless-docker-ubuntu.sh
 SELF_HOSTED_RUNNER_SCRIPT := src/scripts/self-hosted-runners/install-github-runner-agent.sh
 
 

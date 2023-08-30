@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 import pytest
 from faker import Faker
-from src.scripts.create_teams import parse_input_file, update_assets
-from src.scripts.create_teams import process_teams
+from src.scripts.sync_teams.sync_teams import parse_input_file, update_assets
+from src.scripts.sync_teams.sync_teams import process_teams
 from src.shared.models import Organization
 from tests.factories import AssetFactory, TeamAttributesFactory, TeamStructureFactory
 from tests.factories import OrganizationFactory
@@ -36,7 +36,7 @@ def organization():
 def test_parse_input_file(json_data, expected_teams):
     with open("test_input.json", "w") as file:
         file.write(json_data)
-    with patch("src.scripts.create_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
+    with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
         mock_parse_args.return_value.file = "test_input.json"
         result = parse_input_file()
         assert len(result.teams) == expected_teams
@@ -65,7 +65,7 @@ def test_parse_input_file__with_invalid_json(invalid_file, json_data, should_rai
     if invalid_file:
         with open(invalid_file, "w") as file:
             file.write(json_data)
-    with patch("src.scripts.create_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
+    with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
         mock_parse_args.return_value.file = invalid_file
         if should_raise:
             with pytest.raises(expected_exception) as exc_info:
@@ -108,8 +108,8 @@ def test_process_teams(label, existing_teams_indexes, asset_indexes, data, len_e
     assets = [assets[i] for i in
               asset_indexes] if asset_indexes != "all" else assets
 
-    with patch("src.scripts.create_teams.get_existing_teams") as mock_get_existing_teams:
-        with patch("src.scripts.create_teams.create_teams") as mock_create_teams:
+    with patch("src.scripts.sync_teams.sync_teams.get_existing_teams") as mock_get_existing_teams:
+        with patch("src.scripts.sync_teams.sync_teams.create_teams") as mock_create_teams:
             mock_get_existing_teams.return_value = existing_teams
             teams_to_delete = process_teams("token", organization, assets)
             assert len(teams_to_delete) == len_expected_teams_to_delete
@@ -118,8 +118,8 @@ def test_process_teams(label, existing_teams_indexes, asset_indexes, data, len_e
 def test_update_assets(data):
     # Test with no assets
     organization, assets, teams = data
-    # with patch("src.scripts.create_teams.list_assets") as mock_list_assets:
+    # with patch("src.scripts.sync_teams.sync_teams.list_assets") as mock_list_assets:
     # mock_list_assets.return_value = []
-    with patch("src.scripts.create_teams.add_teams_to_asset") as mock_add_teams_to_asset:
+    with patch("src.scripts.sync_teams.sync_teams.add_teams_to_asset") as mock_add_teams_to_asset:
         update_assets("token", assets, organization)
         assert mock_add_teams_to_asset.call_count == 10
