@@ -21,7 +21,7 @@ sudo yum install -y git make && git clone https://github.com/jitsecurity/jit-cus
 ### Ubuntu distro
 
 ```shell
-sudo apt install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
+sudo apt update && sudo apt install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
 ```
 
 ### Mac
