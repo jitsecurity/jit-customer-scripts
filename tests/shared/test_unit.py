@@ -1,6 +1,6 @@
 import pytest
 
-from src.scripts.create_teams import get_teams_to_delete, get_teams_to_create
+from src.scripts.sync_teams.sync_teams import get_teams_to_delete, get_teams_to_create
 
 
 @pytest.mark.parametrize(

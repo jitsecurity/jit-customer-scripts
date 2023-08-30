@@ -1,9 +1,55 @@
-# Jit Customer Scripts
+# Jit Customer Scripts README
 
-[![codecov](https://codecov.io/gh/jitsecurity/jit-customer-scripts/graph/badge.svg?token=76IhFwTPjv)](https://codecov.io/gh/jitsecurity/jit-customer-scripts)
+The README provided is an extensive guide on how to use the `jit-customer-scripts` project. \
+The Makefile described is composed of commands that ease the installation, configuration, and running of the scripts
+within the project.
 
-This project provides customer scripts to help them with their JIT solution. \
-The `create-teams.py` script's goal is to create teams and update assets based on the provided JSON file.
+## Prerequisites
+
+- Python 3.x
+- Git
+- make
+
+To make sure you have all you can run this command:
+
+### Centos distro
+
+```shell
+sudo yum install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
+```
+
+### Ubuntu distro
+
+```shell
+sudo apt update && sudo apt install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
+```
+
+### Mac
+
+```shell
+brew install git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
+```
+
+Here's a breakdown of the provided README and Makefile:
+
+## Supported Scripts
+
+The Makefile consists of several commands to facilitate the installation, configuration, and running of scripts. Here's
+a link to the docs for each one:
+
+* [syncing jit teams](src/scripts/sync_teams/sync-teams.md)
+* [self-hosted-runners](src/scripts/self-hosted-runners/self-hosted-runner.md)
+
+## Hierarchical Structure of the Commands:
+
+1. **sync-teams**
+    - install
+    - configure
+    - run
+
+2. **self-hosted-runner**
+    - centos
+    - ubuntu
 
 ## Project Structure
 
@@ -13,9 +59,11 @@ The project has the following structure:
 jit-customer-scripts/
 ├── src/
 │   └── scripts/
-│       └── create_teams.py
+│       └── sync_teams
+│            └── sync_teams.py
 |       └── self-hosted-runners
-│            └── setup-self-hosted-runner-centos.sh
+│            └── setup-rootless-docker-centos.sh
+│            └── setup-rootless-docker-ubuntu.sh
 │            └── ...
 ├── src/
 │   └── utils/
@@ -34,26 +82,6 @@ jit-customer-scripts/
 - `Makefile`: Provides commands to help with project setup and execution.
 - `README.md`: This file.
 
-## Prerequisites
-
-- Python 3.x
-- Git
-- make
-
-To make sure you have all you can run this command:
-
-#### Centos
-
-```shell
-sudo yum install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
-```
-
-#### Ubuntu
-
-```shell
-sudo apt install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
-```
-
 ## Generating API Keys
 
 * To generate Github Personal Access Token(PAT) refer to
@@ -63,148 +91,15 @@ sudo apt install -y git make && git clone https://github.com/jitsecurity/jit-cus
 
 > We recommend generating a fine-grained PAT with read-only access to the organization for the use of this script.
 
-## Installation
-
-1. Clone the repository:
-
-   ```shell
-   git clone --branch 1.0.0 git@github.com:jitsecurity/jit-customer-scripts.git
-   ```
-
-2. Change into the project directory:
-
-   ```shell
-   cd jit-customer-scripts
-   ```
-
-3. Create a virtual environment and install the required dependencies:
-
-   ```shell
-   make install
-   ```
-
-## Configuration
-
-Before running the script, you need to configure the necessary environment variables. Follow these steps:
-
-1. Run the configuration command:
-
-   ```shell
-   make configure
-   ```
-
-2. Enter the required information when prompted:
-    - GitHub organization name
-    - API client ID
-    - API client secret
-    - GitHub token
-
-3. The command will generate a `.env` file with the provided information.
-
-## Usage
-
-### Creating Teams from Github Topics
-
-To run the script and create teams and update assets, use the following command:
-
-```shell
-make create-teams
-```
-
-This command is a convenience utility that extracts the teams to generate from Github topics. \
-It runs these commands:
-
-```bash
-python src/utils/github_topics_to_json_file.py
-python src/scripts/create_teams.py teams.json
-```
-
-This command will fetch the repository names and topics from the GitHub API and generate the JSON file. And then it will
-create the teams and update the assets.
-
-> We recommend using something like Github Actions and Github secrets to run this script on a schedule to make sure you
-> are always synced.
-
-#### Using External JSON File
-
-You can also provide a JSON file containing team details using a command line argument directly. The JSON file should
-have the following structure:
-
-```json
-{
-  "teams": [
-    {
-      "name": "Team 1",
-      "members": [
-        "user1",
-        "user2"
-      ],
-      "resources": [
-        {
-          "type": "{resource_type}",
-          "name": "Resource 1"
-        },
-        {
-          "type": "{resource_type}",
-          "name": "Resource 2"
-        }
-      ]
-    },
-    {
-      "name": "Team 2",
-      "members": [
-        "user3",
-        "user4"
-      ],
-      "resources": [
-        {
-          "type": "{resource_type}",
-          "name": "Resource 3"
-        }
-      ]
-    }
-  ]
-}
-```
-
-You can run the command like this:
-
-```shell
-python scripts/create_teams.py path/to/teams.json
-```
-
-Replace `path/to/teams.json` with the actual path to your JSON file.
-
-#### Excluding Topics
-
-You can exclude certain topics from being considered when creating teams. \
-To exclude topics, you could add them in the `make configure` command or update this env var in
-the `.env` file: `TEAM_WILDCARD_TO_EXCLUDE`.
-
-For example, to exclude topics that contain the word "test", you can set the variable as follows:
-
-    TEAM_WILDCARD_TO_EXCLUDE=*test*
-
-This will exclude topics with names like "test", "test123", and "abc-testing".
-
-#### Development
+## Development
 
 To override Jit's API endpoint, you can set the `JIT_API_ENDPOINT` environment variable. If the variable is not set, the
 default value will be used.
 
-### Settings Up Self-Hosted Runners
+## Help
 
-To setup self-hosted runners, use the following command:
-
-You need to take the self hosted runners token from the Github Actions page of your repository.
-`https://github.com/<your-github-org-name>/jit/settings/actions/runners`
-
-#### Running on CentOS
+To see the available commands and their descriptions, use the following command:
 
 ```shell
-make setup-self-hosted-runner-centos token=<your-token> github_organization=<your-github-org-name>
+make help
 ```
-
-You will be prompted to answer some questions about your runner. \
-When you complete this step, restart your EC2 machine. \
-The runner will be automatically started on boot.
