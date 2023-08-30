@@ -38,7 +38,7 @@ The Makefile consists of several commands to facilitate the installation, config
 a link to the docs for each one:
 
 * [syncing jit teams](src/scripts/sync_teams/sync-teams.md)
-* [self-hosted-runners](src/scripts/self-hosted-runners/README.md)
+* [self-hosted-runners](src/scripts/self-hosted-runners/self-hosted-runner.md)
 
 ## Hierarchical Structure of the Commands:
 
