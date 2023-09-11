@@ -41,7 +41,7 @@ run:
 	@echo run complete
 
 
-SELF_HOSTED_DOCKER_CENTOS_SCRIPT := src/scripts/self-hosted-runners/setup-rootless-docker-centos.sh
+SELF_HOSTED_DOCKER_AMAZON_SCRIPT := src/scripts/self-hosted-runners/setup-rootless-docker-amazon.sh
 SELF_HOSTED_DOCKER_UBUNTU_SCRIPT := src/scripts/self-hosted-runners/setup-rootless-docker-ubuntu.sh
 SELF_HOSTED_RUNNER_SCRIPT := src/scripts/self-hosted-runners/install-github-runner-agent.sh
 
@@ -55,10 +55,10 @@ check-root:
     fi
 
 setup-runner:
-ifeq ($(filter centos,$(MAKECMDGOALS)),centos)
+ifeq ($(filter amazon,$(MAKECMDGOALS)),amazon)
 	sudo yum install -y jq
-	chmod +x $(SELF_HOSTED_DOCKER_CENTOS_SCRIPT)
-	./$(SELF_HOSTED_DOCKER_CENTOS_SCRIPT)
+	chmod +x $(SELF_HOSTED_DOCKER_AMAZON_SCRIPT)
+	./$(SELF_HOSTED_DOCKER_AMAZON_SCRIPT)
 else ifeq ($(filter ubuntu,$(MAKECMDGOALS)),ubuntu)
 	chmod +x $(SELF_HOSTED_DOCKER_UBUNTU_SCRIPT)
 	./$(SELF_HOSTED_DOCKER_UBUNTU_SCRIPT)
@@ -68,8 +68,8 @@ install-agent:
 	chmod +x $(SELF_HOSTED_RUNNER_SCRIPT)
 	./$(SELF_HOSTED_RUNNER_SCRIPT) $(runner_token) $(github_org)
 
-centos:
-	@echo installed on centos
+amazon:
+	@echo installed on amazon
 
 ubuntu:
 	@echo installed on ubuntu
@@ -81,7 +81,7 @@ help:
 	@echo " install        Install dependencies"
 	@echo " configure      Configure environment variables"
 	@echo " create-teams   Create teams based on input file"
-	@echo " self-hosted-runner centos runner_token=<runner-token> github_org=<github-organization> Set up self-hosted runner on CentOS"
+	@echo " self-hosted-runner amazon runner_token=<runner-token> github_org=<github-organization> Set up self-hosted runner on Amazon Linux"
 	@echo " self-hosted-runner ubuntu runner_token=<runner-token> github_org=<github-organization> Set up self-hosted runner on Ubuntu"
 	@echo " install-agent  Install GitHub runner agent"
 	@echo " help           Show this help message"

@@ -12,7 +12,7 @@ within the project.
 
 To make sure you have all you can run this command:
 
-### Centos distro
+### Amazon Linux distro
 
 ```shell
 sudo yum install -y git make && git clone https://github.com/jitsecurity/jit-customer-scripts.git && cd jit-customer-scripts
@@ -48,7 +48,7 @@ a link to the docs for each one:
     - run
 
 2. **self-hosted-runner**
-    - centos
+    - amazon
     - ubuntu
 
 ## Project Structure
@@ -62,7 +62,7 @@ jit-customer-scripts/
 │       └── sync_teams
 │            └── sync_teams.py
 |       └── self-hosted-runners
-│            └── setup-rootless-docker-centos.sh
+│            └── setup-rootless-docker-amazon.sh
 │            └── setup-rootless-docker-ubuntu.sh
 │            └── ...
 ├── src/

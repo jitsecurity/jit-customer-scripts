@@ -2,16 +2,16 @@
 
 This Command and its sub-targets facilitate setting up a GitHub self-hosted runner on different OS:
 
-- `centos`: Setup self hosted runner on CentOS.
+- `amazon`: Setup self hosted runner on Amazon Linux.
 - `ubuntu`: Setup self hosted runner on Ubuntu.
 
 You need to take the self hosted runners token from the Github Actions page of your repository.
 `https://github.com/<your-github-org-name>/jit/settings/actions/runners`
 
-## Running on CentOS
+## Running on Amazon Linux
 
 ```shell
-make self-hosted-runner centos runner_token=<runner-token> github_org=<github-organization>
+make self-hosted-runner amazon runner_token=<runner-token> github_org=<github-organization>
 ```
 
 You will be prompted to answer some questions about your runner. \
