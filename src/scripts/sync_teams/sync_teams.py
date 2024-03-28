@@ -136,6 +136,8 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
                 team_resources.append(resource.name)
         if team_resources:
             desired_teams.append(team.name)
+        else:
+            logger.info(f'Skipping team {team.name} as it has no active resources in the organization.')
 
     wildcards_to_exclude = os.getenv("TEAM_WILDCARD_TO_EXCLUDE", "").split(",")
     final_desired_teams = []

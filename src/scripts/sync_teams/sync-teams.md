@@ -12,7 +12,7 @@ This target has three sub-targets:
 To run the script and create teams and update assets, use the following command:
 
 ```shell
-make create-teams
+make sync-teams
 ```
 
 This command is a convenience utility that extracts the teams to generate from Github topics. \
@@ -20,7 +20,7 @@ It runs these commands:
 
 ```bash
 python src/utils/github_topics_to_json_file.py
-python src/scripts/create_teams.py teams.json
+python src/scripts/sync_teams.py teams.json
 ```
 
 This command will fetch the repository names and topics from the GitHub API and generate the JSON file. And then it will
@@ -74,7 +74,7 @@ have the following structure:
 You can run the command like this:
 
 ```shell
-python scripts/create_teams.py path/to/teams.json
+python scripts/sync_teams.py path/to/teams.json
 ```
 
 Replace `path/to/teams.json` with the actual path to your JSON file.
