@@ -197,7 +197,9 @@ def set_manual_team_members(token: str, team_id: str, members: List[str]) -> Non
 
     while retry_count <= MAX_RETRIES and failed_members:
         failed_members = _perform_set_manual_team_members(
-            token, team_id, failed_members)
+            token, team_id, members)
+        # We send all members, not just the failed ones. Otherwise it would set the list
+        # to only the failed members
         retry_count += 1
 
     if failed_members:
