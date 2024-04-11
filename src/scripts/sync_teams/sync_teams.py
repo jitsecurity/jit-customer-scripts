@@ -75,16 +75,22 @@ def update_assets(token, assets: List[Asset], organization):
     for asset in assets:
         teams_to_update = asset_to_team_map.get(asset.asset_name, [])
         if teams_to_update:
-            excluded_teams = get_different_items_in_lists(teams_to_update, existing_teams)
+            excluded_teams = get_different_items_in_lists(
+                teams_to_update, existing_teams)
             if excluded_teams:
-                logger.info(f"Excluding topic(s) {excluded_teams} for asset '{asset.asset_name}'")
-                teams_to_update = list(set(teams_to_update) - set(excluded_teams))
-            logger.info(f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
+                logger.info(
+                    f"Excluding topic(s) {excluded_teams} for asset '{asset.asset_name}'")
+                teams_to_update = list(
+                    set(teams_to_update) - set(excluded_teams))
+            logger.info(
+                f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
             add_teams_to_asset(token, asset, teams_to_update)
         else:
-            asset_has_teams_tag = asset.tags and "team" in [t.name for t in asset.tags]
+            asset_has_teams_tag = asset.tags and "team" in [
+                t.name for t in asset.tags]
             if asset_has_teams_tag:
-                logger.info(f"Removing all teams from asset '{asset.asset_name}'")
+                logger.info(
+                    f"Removing all teams from asset '{asset.asset_name}'")
                 add_teams_to_asset(token, asset, teams_to_update)
 
 
@@ -137,7 +143,8 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
         if team_resources:
             desired_teams.append(team.name)
         else:
-            logger.info(f'Skipping team {team.name} as it has no active resources in the organization.')
+            logger.info(
+                f'Skipping team {team.name} as it has no active resources in the organization.')
 
     wildcards_to_exclude = os.getenv("TEAM_WILDCARD_TO_EXCLUDE", "").split(",")
     final_desired_teams = []
@@ -174,7 +181,8 @@ def process_teams(token, organization, assets: List[Asset]) -> List[str]:
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
     if teams_to_create:
-        logger.info(f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
+        logger.info(
+            f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
         create_teams(token, teams_to_create)
     return teams_to_delete
 
@@ -217,11 +225,12 @@ def main():
 
     teams_to_delete = process_teams(jit_token, organization, assets)
 
-    update_assets(jit_token, assets, organization)
+    # update_assets(jit_token, assets, organization)
 
     if teams_to_delete:
-        logger.info(f"Checking which team(s) to delete from: {teams_to_delete}")
-        delete_teams(jit_token, teams_to_delete)
+        logger.info(
+            f"Checking which team(s) to delete from: {teams_to_delete}")
+        # delete_teams(jit_token, teams_to_delete)
     logger.info("Successfully completed teams sync.")
 
 
