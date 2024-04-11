@@ -164,7 +164,8 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
         logger.error(f"Failed to add teams to asset: {str(e)}")
 
 
-def _perform_set_manual_team_members(token: str, team_id: str, members: List[str]) -> Optional[List[str]]:
+def _perform_set_manual_team_members(token: str, team_id: str,
+                                     members: List[str], team_name: str) -> Optional[List[str]]:
     try:
         url = f"{get_jit_endpoint_base_url()}/teams/{team_id}/members"
         headers = get_request_headers(token)
@@ -176,13 +177,13 @@ def _perform_set_manual_team_members(token: str, team_id: str, members: List[str
             failed_members = response.json().get("failed_members", [])
             if failed_members:
                 logger.warning(
-                    f"Failed to set some members for team with ID '{team_id}': {failed_members}")
+                    f"Failed to set some members for team '{team_name}' with ID '{team_id}': {failed_members}")
             else:
                 logger.info(
-                    f"Members set for team with ID '{team_id}' successfully.")
+                    f"Members set for team '{team_name}' with ID '{team_id}' successfully.")
             return failed_members
         else:
-            logger.error(f"Failed to set members for team with ID '{team_id}'. Status code: "
+            logger.error(f"Failed to set members for team '{team_name}' with ID '{team_id}'. Status code: "
                          f"{response.status_code}, {response.text}")
             return None
     except Exception as e:
@@ -191,13 +192,13 @@ def _perform_set_manual_team_members(token: str, team_id: str, members: List[str
         return None
 
 
-def set_manual_team_members(token: str, team_id: str, members: List[str]) -> None:
+def set_manual_team_members(token: str, team_id: str, members: List[str], team_name: str) -> None:
     retry_count = 0
-    failed_members = members
-
+    failed_members = _perform_set_manual_team_members(
+        token, team_id, members, team_name)
     while retry_count <= MAX_RETRIES and failed_members:
         failed_members = _perform_set_manual_team_members(
-            token, team_id, members)
+            token, team_id, members, team_name)
         # We send all members, not just the failed ones. Otherwise it would set the list
         # to only the failed members
         retry_count += 1

@@ -203,7 +203,7 @@ def process_members(token: str, organization: Organization, existing_teams: List
                 logger.warning(f"Team '{team_name}' has more than {MAX_MEMBERS_PER_TEAM} members. "
                                f"Only the first {MAX_MEMBERS_PER_TEAM} members will be set.")
                 team_members = team_members[:MAX_MEMBERS_PER_TEAM]
-            set_manual_team_members(token, team_id, team_members)
+            set_manual_team_members(token, team_id, team_members, team_name)
         else:
             logger.warning(
                 f"Team '{team_name}' not found in existing teams. Skipping member processing.")
