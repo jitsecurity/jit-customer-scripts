@@ -14,14 +14,14 @@ def get_jit_jwt_token() -> Optional[str]:
         "clientId": os.getenv('JIT_CLIENT_ID'),
         "secret": os.getenv('JIT_CLIENT_SECRET')
     }
-
     response = requests.post(f"{get_jit_endpoint_base_url()}/authentication/login",
                              json=payload)
 
     if response.status_code == 200:
         return response.json().get('accessToken')
     else:
-        logger.error(f"Failed to retrieve JWT token. Status code: {response.status_code}")
+        logger.error(
+            f"Failed to retrieve JWT token. Status code: {response.status_code}")
         return None
 
 
@@ -42,7 +42,8 @@ def list_assets(token: str) -> List[Asset]:
             logger.info("Retrieved assets successfully.")
             return [Asset(**asset) for asset in assets]
         else:
-            logger.error(f"Failed to retrieve assets. Status code: {response.status_code}")
+            logger.error(
+                f"Failed to retrieve assets. Status code: {response.status_code}")
             return []
     except Exception as e:
         logger.error(f"Failed to retrieve assets: {str(e)}")
@@ -68,17 +69,20 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
         if response.status_code == 200:
             after = _handle_resoponse(response, existing_teams)
             while after:
-                response = requests.get(f"{url}&after={after}", headers=headers)
+                response = requests.get(
+                    f"{url}&after={after}", headers=headers)
                 if response.status_code == 200:
                     after = _handle_resoponse(response, existing_teams)
                 else:
-                    logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+                    logger.error(
+                        f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                     return []
 
             logger.info("Retrieved existing teams successfully.")
             return [TeamAttributes(**team) for team in existing_teams]
         else:
-            logger.error(f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+            logger.error(
+                f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
             return []
     except Exception as e:
         logger.error(f"Failed to retrieve teams: {str(e)}")
@@ -111,7 +115,8 @@ def delete_teams(token, team_names):
                     logger.error(
                         f"Failed to delete team '{team_name}'. Status code: {response.status_code}, {response.text}")
             else:
-                logger.info(f"Team '{team_name}' is not manually created. Skipping deletion.")
+                logger.info(
+                    f"Team '{team_name}' is not manually created. Skipping deletion.")
         else:
             logger.warning(f"Team '{team_name}' not found.")
 
@@ -150,7 +155,8 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
         }
         response = requests.patch(url, json=payload, headers=headers)
         if response.status_code == 200:
-            logger.info(f"Team(s) synced to asset '{asset.asset_name}' successfully.")
+            logger.info(
+                f"Team(s) synced to asset '{asset.asset_name}' successfully.")
         else:
             logger.error(f"Failed to add teams to asset '{asset.asset_id}'. Status code: "
                          f"{response.status_code}, {response.text}")
