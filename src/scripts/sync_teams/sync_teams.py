@@ -248,12 +248,12 @@ def main():
     teams_to_delete = process_teams(jit_token, organization, assets)
     existing_teams: List[TeamAttributes] = get_existing_teams(jit_token)
     process_members(jit_token, organization, existing_teams)
-    # update_assets(jit_token, assets, organization)
+    update_assets(jit_token, assets, organization)
 
     if teams_to_delete:
         logger.info(
             f"Checking which team(s) to delete from: {teams_to_delete}")
-        # delete_teams(jit_token, teams_to_delete)
+        delete_teams(jit_token, teams_to_delete)
     logger.info("Successfully completed teams sync.")
 
 
