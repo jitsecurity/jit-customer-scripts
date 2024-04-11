@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 from loguru import logger
 from pydantic import ValidationError
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams, \
-    get_jit_jwt_token
+    get_jit_jwt_token, set_manual_team_members
+from src.shared.consts import MAX_MEMBERS_PER_TEAM
 from src.shared.diff_tools import get_different_items_in_lists
 from src.shared.models import Asset, TeamAttributes, Organization, TeamStructure, ResourceType
 
@@ -187,6 +188,27 @@ def process_teams(token, organization, assets: List[Asset]) -> List[str]:
     return teams_to_delete
 
 
+def process_members(token: str, organization: Organization, existing_teams: List[TeamAttributes]) -> None:
+    logger.info("Processing team members.")
+    for team_structure in organization.teams:
+        team_name = team_structure.name
+        team_members = team_structure.members
+
+        # Find the corresponding existing team
+        existing_team = next(
+            (team for team in existing_teams if team.name == team_name), None)
+        if existing_team:
+            team_id = existing_team.id
+            if len(team_members) > MAX_MEMBERS_PER_TEAM:
+                logger.warning(f"Team '{team_name}' has more than {MAX_MEMBERS_PER_TEAM} members. "
+                               f"Only the first {MAX_MEMBERS_PER_TEAM} members will be set.")
+                team_members = team_members[:MAX_MEMBERS_PER_TEAM]
+            set_manual_team_members(token, team_id, team_members)
+        else:
+            logger.warning(
+                f"Team '{team_name}' not found in existing teams. Skipping member processing.")
+
+
 def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
     """
     Get the mapping of assets to teams from the organization.
@@ -224,7 +246,8 @@ def main():
     assets: List[Asset] = list_assets(jit_token)
 
     teams_to_delete = process_teams(jit_token, organization, assets)
-
+    existing_teams: List[TeamAttributes] = get_existing_teams(jit_token)
+    process_members(jit_token, organization, existing_teams)
     # update_assets(jit_token, assets, organization)
 
     if teams_to_delete:

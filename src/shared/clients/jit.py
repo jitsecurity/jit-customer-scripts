@@ -162,3 +162,22 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
                          f"{response.status_code}, {response.text}")
     except Exception as e:
         logger.error(f"Failed to add teams to asset: {str(e)}")
+
+
+def set_manual_team_members(token: str, team_id: str, members: List[str]) -> None:
+    try:
+        url = f"{get_jit_endpoint_base_url()}/teams/{team_id}/members"
+        headers = get_request_headers(token)
+        payload = {
+            "members": members
+        }
+        response = requests.put(url, json=payload, headers=headers)
+        if response.status_code == 200:
+            logger.info(
+                f"Members set for team with ID '{team_id}' successfully.")
+        else:
+            logger.error(f"Failed to set members for team with ID '{team_id}'. Status code: "
+                         f"{response.status_code}, {response.text}")
+    except Exception as e:
+        logger.error(
+            f"Failed to set members for team with ID '{team_id}': {str(e)}")
