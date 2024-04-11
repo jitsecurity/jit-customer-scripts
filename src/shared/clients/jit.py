@@ -4,7 +4,7 @@ from typing import Optional
 
 import requests
 from loguru import logger
-from src.shared.consts import MANUAL_TEAM_SOURCE
+from src.shared.consts import MANUAL_TEAM_SOURCE, MAX_RETRIES
 from src.shared.env_tools import get_jit_endpoint_base_url
 from src.shared.models import Asset, TeamAttributes
 
@@ -164,7 +164,7 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
         logger.error(f"Failed to add teams to asset: {str(e)}")
 
 
-def set_manual_team_members(token: str, team_id: str, members: List[str]) -> None:
+def _perform_set_manual_team_members(token: str, team_id: str, members: List[str]) -> Optional[List[str]]:
     try:
         url = f"{get_jit_endpoint_base_url()}/teams/{team_id}/members"
         headers = get_request_headers(token)
@@ -173,11 +173,33 @@ def set_manual_team_members(token: str, team_id: str, members: List[str]) -> Non
         }
         response = requests.put(url, json=payload, headers=headers)
         if response.status_code == 200:
-            logger.info(
-                f"Members set for team with ID '{team_id}' successfully.")
+            failed_members = response.json().get("failed_members", [])
+            if failed_members:
+                logger.warning(
+                    f"Failed to set some members for team with ID '{team_id}': {failed_members}")
+            else:
+                logger.info(
+                    f"Members set for team with ID '{team_id}' successfully.")
+            return failed_members
         else:
             logger.error(f"Failed to set members for team with ID '{team_id}'. Status code: "
                          f"{response.status_code}, {response.text}")
+            return None
     except Exception as e:
         logger.error(
             f"Failed to set members for team with ID '{team_id}': {str(e)}")
+        return None
+
+
+def set_manual_team_members(token: str, team_id: str, members: List[str]) -> None:
+    retry_count = 0
+    failed_members = members
+
+    while retry_count <= MAX_RETRIES and failed_members:
+        failed_members = _perform_set_manual_team_members(
+            token, team_id, failed_members)
+        retry_count += 1
+
+    if failed_members:
+        logger.error(f"Failed to set some members for team with ID '{team_id}' after {MAX_RETRIES} retries: "
+                     f"{failed_members}")

@@ -2,3 +2,4 @@ MANUAL_TEAM_SOURCE = "manual"
 REPO = 'repo'
 JIT_DEFAULT_API_ENDPOINT = "https://api.jit.io"
 MAX_MEMBERS_PER_TEAM = 8
+MAX_RETRIES = 2
