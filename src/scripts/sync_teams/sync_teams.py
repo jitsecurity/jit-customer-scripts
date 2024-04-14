@@ -1,5 +1,4 @@
 import argparse
-from ast import Or
 import json
 import os
 import sys
