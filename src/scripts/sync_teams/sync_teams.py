@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-from re import L
 import sys
 from typing import List, Dict, Tuple
 
@@ -187,7 +186,7 @@ def process_teams(token, organization, assets: List[Asset],
         logger.info(
             f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
         created_teams = create_teams(token, teams_to_create)
-    return teams_to_delete, create_teams
+    return teams_to_delete, created_teams
 
 
 def process_members(token: str, organization: Organization, existing_teams: List[TeamAttributes],
