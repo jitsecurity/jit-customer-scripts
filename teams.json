@@ -1,0 +1,51 @@
+{
+  "teams": [
+    {
+      "name": "Team1",
+      "members": [
+        "JonathanDemoAccount",
+        "henkling"
+      ],
+      "resources": [
+        {
+          "type": "github_repo",
+          "name": "testrepo1"
+        },
+        {
+          "type": "github_repo",
+          "name": "testrepo2"
+        }
+      ]
+    },
+    {
+      "name": "Team2",
+      "members": [
+        "JonathanDemoAccount",
+        "henkling"
+      ],
+      "resources": [
+        {
+          "type": "github_repo",
+          "name": "testrepo2"
+        },
+        {
+          "type": "github_repo",
+          "name": "testrepo3"
+        }
+      ]
+    },
+    {
+      "name": "Team3",
+      "members": [
+        "JonathanDemoAccount",
+        "henkling"
+      ],
+      "resources": [
+        {
+          "type": "github_repo",
+          "name": "testrepo1"
+        }
+      ]
+    }
+  ]
+}

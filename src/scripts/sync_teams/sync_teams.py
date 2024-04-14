@@ -188,7 +188,8 @@ def process_teams(token, organization, assets: List[Asset]) -> List[str]:
     return teams_to_delete
 
 
-def process_members(token: str, organization: Organization, existing_teams: List[TeamAttributes]) -> None:
+def process_members(token: str, organization: Organization, existing_teams: List[TeamAttributes],
+                    desired_teams: List[str]) -> None:
     logger.info("Processing team members.")
     for team_structure in organization.teams:
         team_name = team_structure.name
@@ -197,7 +198,7 @@ def process_members(token: str, organization: Organization, existing_teams: List
         # Find the corresponding existing team
         existing_team = next(
             (team for team in existing_teams if team.name == team_name), None)
-        if existing_team:
+        if existing_team and team_name in desired_teams:
             team_id = existing_team.id
             if len(team_members) > MAX_MEMBERS_PER_TEAM:
                 logger.warning(f"Team '{team_name}' has more than {MAX_MEMBERS_PER_TEAM} members. "
@@ -247,7 +248,8 @@ def main():
 
     teams_to_delete = process_teams(jit_token, organization, assets)
     existing_teams: List[TeamAttributes] = get_existing_teams(jit_token)
-    process_members(jit_token, organization, existing_teams)
+    desired_teams = get_desired_teams(assets, organization)
+    process_members(jit_token, organization, existing_teams, desired_teams)
     update_assets(jit_token, assets, organization)
 
     if teams_to_delete:
