@@ -122,6 +122,7 @@ def delete_teams(token, team_names):
 
 
 def create_teams(token, teams_to_create):
+    created_teams: List[TeamAttributes] = []
     try:
         url = f"{get_jit_endpoint_base_url()}/teams/"
         headers = get_request_headers(token)
@@ -132,9 +133,11 @@ def create_teams(token, teams_to_create):
             response = requests.post(url, json=payload, headers=headers)
             if response.status_code == 201:
                 logger.info(f"Team '{team_name}' created successfully.")
+                created_teams.append(TeamAttributes(**response.json()))
             else:
                 logger.error(
                     f"Failed to create team '{team_name}'. Status code: {response.status_code}, {response.text}")
+        return created_teams
     except Exception as e:
         logger.error(f"Failed to create teams: {str(e)}")
 

@@ -1,8 +1,9 @@
 import argparse
 import json
 import os
+from re import L
 import sys
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -163,7 +164,8 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
     return final_desired_teams
 
 
-def process_teams(token, organization, assets: List[Asset]) -> List[str]:
+def process_teams(token, organization, assets: List[Asset],
+                  existing_teams: List[TeamAttributes]) -> Tuple[List[str], List[TeamAttributes]]:
     """
     Process the teams in the organization and create or delete teams as necessary.
     We will delete the teams at a later stage to avoid possible synchronization issues.
@@ -178,15 +180,14 @@ def process_teams(token, organization, assets: List[Asset]) -> List[str]:
     logger.info("Determining required changes in teams.")
 
     desired_teams = get_desired_teams(assets, organization)
-    existing_teams: List[TeamAttributes] = get_existing_teams(token)
     existing_team_names = [team.name for team in existing_teams]
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
     if teams_to_create:
         logger.info(
             f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
-        create_teams(token, teams_to_create)
-    return teams_to_delete
+        created_teams = create_teams(token, teams_to_create)
+    return teams_to_delete, create_teams
 
 
 def process_members(token: str, organization: Organization, existing_teams: List[TeamAttributes],
@@ -252,8 +253,10 @@ def main():
 
     assets: List[Asset] = list_assets(jit_token)
 
-    teams_to_delete = process_teams(jit_token, organization, assets)
-    existing_teams: List[TeamAttributes] = get_existing_teams(jit_token)
+    existing_teams = get_existing_teams(jit_token)
+    teams_to_delete, created_teams = process_teams(
+        jit_token, organization, assets, existing_teams)
+    existing_teams: List[TeamAttributes] = existing_teams + created_teams
     desired_teams = get_desired_teams(assets, organization)
     process_members(jit_token, organization, existing_teams, desired_teams)
     update_assets(jit_token, assets, organization, existing_teams)
