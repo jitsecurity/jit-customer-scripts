@@ -1,4 +1,5 @@
 import argparse
+from ast import Or
 import json
 import os
 import sys
@@ -58,7 +59,8 @@ def parse_input_file() -> Organization:
         sys.exit(1)
 
 
-def update_assets(token, assets: List[Asset], organization):
+def update_assets(token, assets: List[Asset], organization: Organization,
+                  existing_teams: List[TeamAttributes]):
     """
     Update the assets with the teams specified in the organization.
 
@@ -72,7 +74,7 @@ def update_assets(token, assets: List[Asset], organization):
     logger.info("Updating assets.")
 
     asset_to_team_map = get_teams_for_assets(organization)
-    existing_teams: List[str] = [t.name for t in get_existing_teams(token)]
+    existing_teams: List[str] = [t.name for t in existing_teams]
     for asset in assets:
         teams_to_update = asset_to_team_map.get(asset.asset_name, [])
         if teams_to_update:
@@ -250,7 +252,7 @@ def main():
     existing_teams: List[TeamAttributes] = get_existing_teams(jit_token)
     desired_teams = get_desired_teams(assets, organization)
     process_members(jit_token, organization, existing_teams, desired_teams)
-    update_assets(jit_token, assets, organization)
+    update_assets(jit_token, assets, organization, existing_teams)
 
     if teams_to_delete:
         logger.info(
