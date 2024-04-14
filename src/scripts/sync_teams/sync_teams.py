@@ -66,7 +66,7 @@ def update_assets(token, assets: List[Asset], organization: Organization,
     Args:
         token (str): The JWT token.
         organization (Organization): The organization object.
-
+        existing_teams (List[TeamAttributes]): The existing teams.
     Returns:
         None
     """
@@ -172,6 +172,7 @@ def process_teams(token, organization, assets: List[Asset],
     Args:
         token (str): The JWT token.
         organization (Organization): The organization object.
+        existing_teams (List[TeamAttributes]): The existing teams.
 
     Returns:
         Tuple[List[str], List[TeamAttributes]]: The names of the teams to delete and the created teams.
