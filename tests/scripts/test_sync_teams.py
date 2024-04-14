@@ -111,7 +111,7 @@ def test_process_teams(label, existing_teams_indexes, asset_indexes, data, len_e
     with patch("src.scripts.sync_teams.sync_teams.get_existing_teams") as mock_get_existing_teams:
         with patch("src.scripts.sync_teams.sync_teams.create_teams") as mock_create_teams:
             mock_get_existing_teams.return_value = existing_teams
-            teams_to_delete = process_teams(
+            teams_to_delete, _ = process_teams(
                 "token", organization, assets, existing_teams)
             assert len(teams_to_delete) == len_expected_teams_to_delete
 
