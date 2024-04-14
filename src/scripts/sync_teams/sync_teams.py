@@ -174,7 +174,7 @@ def process_teams(token, organization, assets: List[Asset],
         organization (Organization): The organization object.
 
     Returns:
-        List[str]: The names of the teams to delete.
+        Tuple[List[str], List[TeamAttributes]]: The names of the teams to delete and the created teams.
     """
     logger.info("Determining required changes in teams.")
 
