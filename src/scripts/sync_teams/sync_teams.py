@@ -182,6 +182,7 @@ def process_teams(token, organization, assets: List[Asset],
     existing_team_names = [team.name for team in existing_teams]
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
+    created_teams = []
     if teams_to_create:
         logger.info(
             f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
