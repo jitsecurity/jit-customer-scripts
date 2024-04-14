@@ -194,22 +194,27 @@ def process_members(token: str, organization: Organization, existing_teams: List
                     desired_teams: List[str]) -> None:
     logger.info("Processing team members.")
     for team_structure in organization.teams:
-        team_name = team_structure.name
-        team_members = team_structure.members
+        try:
+            team_name = team_structure.name
+            team_members = team_structure.members
 
-        # Find the corresponding existing team
-        existing_team = next(
-            (team for team in existing_teams if team.name == team_name), None)
-        if existing_team and team_name in desired_teams:
-            team_id = existing_team.id
-            if len(team_members) > MAX_MEMBERS_PER_TEAM:
-                logger.warning(f"Team '{team_name}' has more than {MAX_MEMBERS_PER_TEAM} members. "
-                               f"Only the first {MAX_MEMBERS_PER_TEAM} members will be set.")
-                team_members = team_members[:MAX_MEMBERS_PER_TEAM]
-            set_manual_team_members(token, team_id, team_members, team_name)
-        else:
-            logger.warning(
-                f"Team '{team_name}' not found in existing teams. Skipping member processing.")
+            # Find the corresponding existing team
+            existing_team = next(
+                (team for team in existing_teams if team.name == team_name), None)
+            if existing_team and team_name in desired_teams:
+                team_id = existing_team.id
+                if len(team_members) > MAX_MEMBERS_PER_TEAM:
+                    logger.warning(f"Team '{team_name}' has more than {MAX_MEMBERS_PER_TEAM} members. "
+                                   f"Only the first {MAX_MEMBERS_PER_TEAM} members will be set.")
+                    team_members = team_members[:MAX_MEMBERS_PER_TEAM]
+                set_manual_team_members(
+                    token, team_id, team_members, team_name)
+            else:
+                logger.warning(
+                    f"Team '{team_name}' not found in existing teams. Skipping member processing.")
+        except Exception as e:
+            logger.error(
+                f"Failed to process members for team '{team_name}': {str(e)}")
 
 
 def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
