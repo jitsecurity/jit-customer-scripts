@@ -2,13 +2,14 @@ import argparse
 import json
 import os
 import sys
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from dotenv import load_dotenv
 from loguru import logger
 from pydantic import ValidationError
 from src.shared.clients.jit import get_existing_teams, create_teams, list_assets, add_teams_to_asset, delete_teams, \
-    get_jit_jwt_token
+    get_jit_jwt_token, set_manual_team_members
+from src.shared.consts import MAX_MEMBERS_PER_TEAM
 from src.shared.diff_tools import get_different_items_in_lists
 from src.shared.models import Asset, TeamAttributes, Organization, TeamStructure, ResourceType
 
@@ -57,34 +58,41 @@ def parse_input_file() -> Organization:
         sys.exit(1)
 
 
-def update_assets(token, assets: List[Asset], organization):
+def update_assets(token, assets: List[Asset], organization: Organization,
+                  existing_teams: List[TeamAttributes]):
     """
     Update the assets with the teams specified in the organization.
 
     Args:
         token (str): The JWT token.
         organization (Organization): The organization object.
-
+        existing_teams (List[TeamAttributes]): The existing teams.
     Returns:
         None
     """
     logger.info("Updating assets.")
 
     asset_to_team_map = get_teams_for_assets(organization)
-    existing_teams: List[str] = [t.name for t in get_existing_teams(token)]
+    existing_teams: List[str] = [t.name for t in existing_teams]
     for asset in assets:
         teams_to_update = asset_to_team_map.get(asset.asset_name, [])
         if teams_to_update:
-            excluded_teams = get_different_items_in_lists(teams_to_update, existing_teams)
+            excluded_teams = get_different_items_in_lists(
+                teams_to_update, existing_teams)
             if excluded_teams:
-                logger.info(f"Excluding topic(s) {excluded_teams} for asset '{asset.asset_name}'")
-                teams_to_update = list(set(teams_to_update) - set(excluded_teams))
-            logger.info(f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
+                logger.info(
+                    f"Excluding topic(s) {excluded_teams} for asset '{asset.asset_name}'")
+                teams_to_update = list(
+                    set(teams_to_update) - set(excluded_teams))
+            logger.info(
+                f"Syncing team(s) {teams_to_update} to asset '{asset.asset_name}'")
             add_teams_to_asset(token, asset, teams_to_update)
         else:
-            asset_has_teams_tag = asset.tags and "team" in [t.name for t in asset.tags]
+            asset_has_teams_tag = asset.tags and "team" in [
+                t.name for t in asset.tags]
             if asset_has_teams_tag:
-                logger.info(f"Removing all teams from asset '{asset.asset_name}'")
+                logger.info(
+                    f"Removing all teams from asset '{asset.asset_name}'")
                 add_teams_to_asset(token, asset, teams_to_update)
 
 
@@ -137,7 +145,8 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
         if team_resources:
             desired_teams.append(team.name)
         else:
-            logger.info(f'Skipping team {team.name} as it has no active resources in the organization.')
+            logger.info(
+                f'Skipping team {team.name} as it has no active resources in the organization.')
 
     wildcards_to_exclude = os.getenv("TEAM_WILDCARD_TO_EXCLUDE", "").split(",")
     final_desired_teams = []
@@ -154,7 +163,8 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
     return final_desired_teams
 
 
-def process_teams(token, organization, assets: List[Asset]) -> List[str]:
+def process_teams(token, organization, assets: List[Asset],
+                  existing_teams: List[TeamAttributes]) -> Tuple[List[str], List[TeamAttributes]]:
     """
     Process the teams in the organization and create or delete teams as necessary.
     We will delete the teams at a later stage to avoid possible synchronization issues.
@@ -162,21 +172,50 @@ def process_teams(token, organization, assets: List[Asset]) -> List[str]:
     Args:
         token (str): The JWT token.
         organization (Organization): The organization object.
+        existing_teams (List[TeamAttributes]): The existing teams.
 
     Returns:
-        List[str]: The names of the teams to delete.
+        Tuple[List[str], List[TeamAttributes]]: The names of the teams to delete and the created teams.
     """
     logger.info("Determining required changes in teams.")
 
     desired_teams = get_desired_teams(assets, organization)
-    existing_teams: List[TeamAttributes] = get_existing_teams(token)
     existing_team_names = [team.name for team in existing_teams]
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
+    created_teams = []
     if teams_to_create:
-        logger.info(f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
-        create_teams(token, teams_to_create)
-    return teams_to_delete
+        logger.info(
+            f"Creating {len(teams_to_create)} team(s): {teams_to_create}")
+        created_teams = create_teams(token, teams_to_create)
+    return teams_to_delete, created_teams
+
+
+def process_members(token: str, organization: Organization, existing_teams: List[TeamAttributes],
+                    desired_teams: List[str]) -> None:
+    logger.info("Processing team members.")
+    for team_structure in organization.teams:
+        try:
+            team_name = team_structure.name
+            team_members = team_structure.members
+
+            # Find the corresponding existing team
+            existing_team = next(
+                (team for team in existing_teams if team.name == team_name), None)
+            if existing_team and team_name in desired_teams:
+                team_id = existing_team.id
+                if len(team_members) > MAX_MEMBERS_PER_TEAM:
+                    logger.warning(f"Team '{team_name}' has more than {MAX_MEMBERS_PER_TEAM} members. "
+                                   f"Only the first {MAX_MEMBERS_PER_TEAM} members will be set.")
+                    team_members = team_members[:MAX_MEMBERS_PER_TEAM]
+                set_manual_team_members(
+                    token, team_id, team_members, team_name)
+            else:
+                logger.warning(
+                    f"Team '{team_name}' not found in existing teams. Skipping member processing.")
+        except Exception as e:
+            logger.error(
+                f"Failed to process members for team '{team_name}': {str(e)}")
 
 
 def get_teams_for_assets(organization: Organization) -> Dict[str, List[str]]:
@@ -215,12 +254,17 @@ def main():
 
     assets: List[Asset] = list_assets(jit_token)
 
-    teams_to_delete = process_teams(jit_token, organization, assets)
-
-    update_assets(jit_token, assets, organization)
+    existing_teams = get_existing_teams(jit_token)
+    teams_to_delete, created_teams = process_teams(
+        jit_token, organization, assets, existing_teams)
+    existing_teams: List[TeamAttributes] = existing_teams + created_teams
+    desired_teams = get_desired_teams(assets, organization)
+    process_members(jit_token, organization, existing_teams, desired_teams)
+    update_assets(jit_token, assets, organization, existing_teams)
 
     if teams_to_delete:
-        logger.info(f"Checking which team(s) to delete from: {teams_to_delete}")
+        logger.info(
+            f"Checking which team(s) to delete from: {teams_to_delete}")
         delete_teams(jit_token, teams_to_delete)
     logger.info("Successfully completed teams sync.")
 

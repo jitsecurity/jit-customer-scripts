@@ -27,9 +27,9 @@ def organization():
     [
         ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1),
         (
-                '{"teams": [{"name": "team1", "members": [], "resources": []}, '
-                '{"name": "team2", "members": [], "resources": []}]}',
-                2,
+            '{"teams": [{"name": "team1", "members": [], "resources": []}, '
+            '{"name": "team2", "members": [], "resources": []}]}',
+            2,
         ),
     ],
 )
@@ -48,16 +48,16 @@ def test_parse_input_file(json_data, expected_teams):
         ("", "", False, ""),  # No file provided
         ("test_input.txt", "some text", False, ""),  # Wrong file type provided
         (
-                "test_input.json",
-                '{"teams": [{"name": "team1", "members": [], "resources": []}',
-                True,
-                JSONDecodeError,
+            "test_input.json",
+            '{"teams": [{"name": "team1", "members": [], "resources": []}',
+            True,
+            JSONDecodeError,
         ),  # Malformed JSON data
         (
-                "test_input.json",
-                '{"name": "team1", "members": [], "resources": []}',
-                False,
-                "",
+            "test_input.json",
+            '{"name": "team1", "members": [], "resources": []}',
+            False,
+            "",
         ),  # not an organization data
     ],
 )
@@ -111,7 +111,8 @@ def test_process_teams(label, existing_teams_indexes, asset_indexes, data, len_e
     with patch("src.scripts.sync_teams.sync_teams.get_existing_teams") as mock_get_existing_teams:
         with patch("src.scripts.sync_teams.sync_teams.create_teams") as mock_create_teams:
             mock_get_existing_teams.return_value = existing_teams
-            teams_to_delete = process_teams("token", organization, assets)
+            teams_to_delete, created_teams = process_teams(
+                "token", organization, assets, existing_teams)
             assert len(teams_to_delete) == len_expected_teams_to_delete
 
 
@@ -121,5 +122,5 @@ def test_update_assets(data):
     # with patch("src.scripts.sync_teams.sync_teams.list_assets") as mock_list_assets:
     # mock_list_assets.return_value = []
     with patch("src.scripts.sync_teams.sync_teams.add_teams_to_asset") as mock_add_teams_to_asset:
-        update_assets("token", assets, organization)
+        update_assets("token", assets, organization, teams)
         assert mock_add_teams_to_asset.call_count == 10

@@ -1,9 +1,11 @@
+import json
 import pytest
 from src.shared.clients.github import get_teams_from_github_topics
 from src.shared.clients.jit import list_assets, get_existing_teams, create_teams, add_teams_to_asset, delete_teams, \
     get_jit_jwt_token
 from src.shared.env_tools import get_jit_endpoint_base_url
 from src.shared.models import TeamAttributes, Asset, Organization, TeamStructure, Resource, ResourceType
+from tests.factories import TeamAttributesFactory
 
 
 class MockRepo:
@@ -51,7 +53,8 @@ def test_get_teams_from_github_topics__happy_flow(mock_repos, expected_result, m
     organization_mock.get_repos.return_value = mock_repos
 
     github_mock.get_organization.return_value = organization_mock
-    mocker.patch("src.shared.clients.github.Github", return_value=github_mock)  # Adjust the import path.
+    # Adjust the import path.
+    mocker.patch("src.shared.clients.github.Github", return_value=github_mock)
 
     # Run the function
     repositories = get_teams_from_github_topics()
@@ -87,7 +90,8 @@ def test_get_jwt_token(status_code, expected_result, mocker):
     else:
         response_mock.json.return_value = {}
 
-    requests_post_mock = mocker.patch("requests.post", return_value=response_mock)
+    requests_post_mock = mocker.patch(
+        "requests.post", return_value=response_mock)
 
     token = get_jit_jwt_token()
 
@@ -103,8 +107,8 @@ def test_get_jwt_token(status_code, expected_result, mocker):
     [
         (200, [{"asset_id": "1", "tenant_id": "tenant1", "asset_type": "type1", "vendor": "vendor1", "owner": "owner1",
                 "asset_name": "name1", "is_active": True, "created_at": "date1", "modified_at": "date2"}], [
-             Asset(asset_id="1", tenant_id="tenant1", asset_type="type1", vendor="vendor1", owner="owner1",
-                   asset_name="name1", is_active=True, created_at="date1", modified_at="date2")]),
+            Asset(asset_id="1", tenant_id="tenant1", asset_type="type1", vendor="vendor1", owner="owner1",
+                  asset_name="name1", is_active=True, created_at="date1", modified_at="date2")]),
         (400, {}, []),
     ]
 )
@@ -124,7 +128,7 @@ def test_list_assets(mocker, status_code, response_data, expected_assets):
         ([200, 200], [{"data": [
             {"tenant_id": "tenant1", "id": "1", "created_at": "date1", "modified_at": "date2", "name": "name1"}],
             "metadata": {"after": "some_value"}}, {"data": [
-            {"tenant_id": "tenant2", "id": "2", "created_at": "date3", "modified_at": "date4", "name": "name2"}],
+                {"tenant_id": "tenant2", "id": "2", "created_at": "date3", "modified_at": "date4", "name": "name2"}],
             "metadata": {"after": None}}],
          [TeamAttributes(tenant_id="tenant1", id="1", created_at="date1", modified_at="date2", name="name1"),
           TeamAttributes(tenant_id="tenant2", id="2", created_at="date3", modified_at="date4", name="name2")]),
@@ -143,12 +147,26 @@ def test_get_existing_teams(mocker, status_codes, response_data_list, expected_t
 @pytest.mark.parametrize(
     "teams_to_create, response_status_codes, log_messages",
     [
-        (["team1", "team2"], [201, 201], ["Team 'team1' created successfully.", "Team 'team2' created successfully."]),
-        (["team1", "team2"], [400, 201], ["Failed to create team 'team1'", "Team 'team2' created successfully."]),
+        (["team1", "team2"], [201, 201], [
+            "Team 'team1' created successfully.", "Team 'team2' created successfully."]),
+        (["team1", "team2"], [400, 201], [
+            "Failed to create team 'team1'", "Team 'team2' created successfully."]),
     ]
 )
 def test_create_teams(mocker, teams_to_create, response_status_codes, log_messages):
-    mock_responses = [mocker.MagicMock(status_code=code) for code in response_status_codes]
+    mock_responses = []
+    for code in response_status_codes:
+        if code == 201:
+            mock_response = mocker.MagicMock(
+                status_code=code,
+                json=mocker.MagicMock(
+                    return_value=TeamAttributesFactory().build().dict())
+            )
+        else:
+            mock_response = mocker.MagicMock(
+                status_code=code, json=mocker.MagicMock(return_value={}))
+        mock_responses.append(mock_response)
+
     mocker.patch("requests.post", side_effect=mock_responses)
     mock_logger_info = mocker.patch("loguru.logger.info")
     mock_logger_error = mocker.patch("loguru.logger.error")
@@ -159,7 +177,6 @@ def test_create_teams(mocker, teams_to_create, response_status_codes, log_messag
         if "successfully" in message:
             mock_logger_info.assert_any_call(message)
         else:
-            # check that the error message partially contains the expected message
             assert [message in m for m in mock_logger_error.call_args.args][0]
 
 
@@ -185,9 +202,11 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
     add_teams_to_asset("test_token", asset, teams)
 
     if status_code == 200:
-        mock_logger_info.assert_called_once_with("Team(s) synced to asset 'asset_name' successfully.")
+        mock_logger_info.assert_called_once_with(
+            "Team(s) synced to asset 'asset_name' successfully.")
     else:
-        mock_logger_error.assert_called_once_with(expected_result.format(mock_response.text))
+        mock_logger_error.assert_called_once_with(
+            expected_result.format(mock_response.text))
 
 
 @pytest.mark.parametrize(
@@ -197,7 +216,8 @@ def test_add_teams_to_asset(mocker, status_code, expected_result):
          ["Team 'team1' deleted successfully.", "Team 'team2' deleted successfully."], [], []),
         (404, ["team1", "team2"], ["team1", "team2"], [],
          ["Failed to delete team 'team2'. Status code: 404, Error details."], []),
-        (204, ["team1"], ["team1", "team2"], ["Team 'team1' deleted successfully."], [], ["Team 'team2' not found."])
+        (204, ["team1"], ["team1", "team2"], [
+         "Team 'team1' deleted successfully."], [], ["Team 'team2' not found."])
     ]
 )
 def test_delete_teams(mocker, status_code, existing_team_names, input_team_names, expected_info, expected_error,
@@ -208,9 +228,11 @@ def test_delete_teams(mocker, status_code, existing_team_names, input_team_names
         for i, team_name in enumerate(existing_team_names)
     ]
 
-    mocker.patch("src.shared.clients.jit.get_existing_teams", return_value=mock_existing_teams)
+    mocker.patch("src.shared.clients.jit.get_existing_teams",
+                 return_value=mock_existing_teams)
 
-    mock_responses = [mocker.MagicMock(status_code=status_code, text="Error details.") for _ in existing_team_names]
+    mock_responses = [mocker.MagicMock(
+        status_code=status_code, text="Error details.") for _ in existing_team_names]
     mocker.patch("requests.delete", side_effect=mock_responses)
 
     mock_logger_info = mocker.patch("loguru.logger.info")
