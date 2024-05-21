@@ -10,6 +10,8 @@ from src.shared.models import Asset, TeamAttributes
 
 
 def get_jit_jwt_token() -> Optional[str]:
+    logger.info(
+        f"Client ID: {os.getenv('JIT_CLIENT_ID')}, Client Secret: {os.getenv('JIT_CLIENT_SECRET')}")
     payload = {
         "clientId": os.getenv('JIT_CLIENT_ID'),
         "secret": os.getenv('JIT_CLIENT_SECRET')
