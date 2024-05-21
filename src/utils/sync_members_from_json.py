@@ -9,6 +9,7 @@ from src.shared.models import Organization, MemberMapping
 # Load environment variables from .env file.
 members_mapping_file = os.getenv(
     'MEMBERS_MAPPING_FILE', 'members_mapping.json')
+teams_json_file = os.getenv('TEAMS_JSON_FILE', 'teams.json')
 
 
 def load_json_file(file_path: str):
@@ -38,15 +39,16 @@ def main():
                        for team_name, members in members_mapping_data.items()]
 
     logger.info("Loading teams data from teams.json")
-    teams_data = load_json_file('teams.json')
+    teams_data = load_json_file(teams_json_file)
     organization = Organization(**teams_data)
 
     updated_organization = update_teams_with_members(
         organization, members_mapping)
 
     logger.info("Saving updated teams data to teams.json")
-    save_json_file('teams.json', updated_organization.dict())
+    save_json_file(teams_json_file, updated_organization.dict())
     logger.info("Successfully updated teams.json with members")
+    logger.info(f"New file content: {updated_organization.dict()}")
 
 
 if __name__ == '__main__':
