@@ -29,7 +29,6 @@ endif
 ifeq ($(filter run,$(MAKECMDGOALS)),run)
 	. venv-jit/bin/activate && \
 	export PYTHONPATH=$(CURDIR) && \
-	python3 src/utils/github_topics_to_json_file.py && \
 	python3 src/scripts/sync_teams/sync_teams.py teams.json
 endif
 
