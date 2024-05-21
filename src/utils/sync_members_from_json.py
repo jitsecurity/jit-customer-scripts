@@ -31,6 +31,7 @@ def update_teams_with_members(organization: Organization, members_mapping: List[
 
 
 def main():
+    logger.info(os.listdir('..'))
     logger.info(f"Loading members mapping from {members_mapping_file}")
     members_mapping_data = load_json_file(members_mapping_file)
     members_mapping = [MemberMapping(team_name=team_name, members=members)
