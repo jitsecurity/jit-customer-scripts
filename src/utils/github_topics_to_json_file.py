@@ -8,7 +8,7 @@ from src.shared.clients.github import get_teams_from_github_topics
 
 # Load environment variables from .env file.
 
-TEAMS_JSON_FILE = os.getenv("TEAMS_JSON_FILE", "../teams.json")
+TEAMS_JSON_FILE = os.getenv("TEAMS_JSON_FILE", "teams.json")
 
 load_dotenv()
 logger.remove()  # Remove default handler

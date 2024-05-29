@@ -9,7 +9,7 @@ from src.shared.models import Organization, MemberMapping
 # Load environment variables from .env file.
 members_mapping_file = os.getenv(
     'MEMBERS_MAPPING_FILE', 'members_mapping.json')
-teams_json_file = os.getenv('TEAMS_JSON_FILE', '../teams.json')
+teams_json_file = os.getenv('TEAMS_JSON_FILE', 'teams.json')
 
 
 def load_json_file(file_path: str):
