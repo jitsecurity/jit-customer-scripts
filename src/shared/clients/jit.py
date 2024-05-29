@@ -1,4 +1,3 @@
-from math import log
 import os
 from typing import List
 from typing import Optional
