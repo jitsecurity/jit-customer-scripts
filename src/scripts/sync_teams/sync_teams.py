@@ -40,19 +40,6 @@ def parse_input_file() -> Organization:
     # Check if the file exists and is a JSON file
 
     logger.info(f"Reading file: {args.file}")
-    logger.info(f"Currnet dict: {os.listdir()}")
-    logger.info(f"Current dir: {os.getcwd()}")
-    logger.info(
-        f"Previous dir: {os.path.abspath(os.path.join(os.getcwd(), os.pardir))}")
-    logger.info(
-        f"Previous dir files: {os.listdir(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))}")
-
-    if not os.path.isfile(args.file):
-        logger.error("Error: File does not exist.")
-        sys.exit(1)
-    if not args.file.endswith(".json"):
-        logger.error("Error: File is not a JSON file.")
-        sys.exit(1)
 
     # Read the JSON file
     with open(args.file, "r") as file:
