@@ -38,7 +38,12 @@ def parse_input_file() -> Organization:
     args = parser.parse_args()
 
     # Check if the file exists and is a JSON file
-
+    if not os.path.isfile(args.file):
+        logger.error("Error: File does not exist.")
+        sys.exit(1)
+    if not args.file.endswith(".json"):
+        logger.error("Error: File is not a JSON file.")
+        sys.exit(1)
     logger.info(f"Reading file: {args.file}")
 
     # Read the JSON file
