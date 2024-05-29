@@ -49,6 +49,8 @@ def main():
     save_json_file(teams_json_file, updated_organization.dict())
     logger.info("Successfully updated teams.json with members")
     logger.info(f"New file content: {updated_organization.dict()}")
+    logger.info(
+        f"File was written to path: {f'{os.getcwd()}/{teams_json_file}'}")
 
 
 if __name__ == '__main__':
