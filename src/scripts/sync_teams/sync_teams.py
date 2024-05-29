@@ -44,6 +44,8 @@ def parse_input_file() -> Organization:
     logger.info(f"Current dir: {os.getcwd()}")
     logger.info(
         f"Previous dir: {os.path.abspath(os.path.join(os.getcwd(), os.pardir))}")
+    logger.info(
+        f"Previous dir files: {os.listdir(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))}")
 
     if not os.path.isfile(args.file):
         logger.error("Error: File does not exist.")
