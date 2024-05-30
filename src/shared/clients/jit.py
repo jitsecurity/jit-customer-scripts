@@ -14,7 +14,9 @@ def get_jit_jwt_token() -> Optional[str]:
         "clientId": os.getenv('JIT_CLIENT_ID'),
         "secret": os.getenv('JIT_CLIENT_SECRET')
     }
-    response = requests.post(f"{get_jit_endpoint_base_url()}/authentication/login",
+    jit_endpoint = get_jit_endpoint_base_url()
+    logger.info(f"Using {jit_endpoint} endpoint.")
+    response = requests.post(f"{jit_endpoint}/authentication/login",
                              json=payload)
 
     if response.status_code == 200:

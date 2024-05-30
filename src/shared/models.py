@@ -55,3 +55,8 @@ class Asset(BaseModel):
 
 class Organization(BaseModel):
     teams: List[TeamStructure]
+
+
+class MemberMapping(BaseModel):
+    team_name: str
+    members: List[str]

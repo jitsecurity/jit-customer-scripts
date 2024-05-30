@@ -44,6 +44,7 @@ def parse_input_file() -> Organization:
     if not args.file.endswith(".json"):
         logger.error("Error: File is not a JSON file.")
         sys.exit(1)
+    logger.info(f"Reading file: {args.file}")
 
     # Read the JSON file
     with open(args.file, "r") as file:
