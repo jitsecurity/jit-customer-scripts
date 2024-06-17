@@ -19,7 +19,15 @@ def get_teams_from_bigquery_view() -> Organization:
         client = bigquery.Client(credentials=credentials)
 
         teams = {}
-        fields = ["ownership_team_name", "repos", "slack_alerting_channel"]
+        fields = [
+            "ownership_team_name",
+            "repos",
+            "managers",
+            "manager_usernames",
+            "members",
+            "member_usernames",
+            "slack_alerting_channel"
+        ]
 
         # Perform a query
         query = "SELECT {fields} FROM `{view}` WHERE ARRAY_LENGTH(repos)>0 AND NOT CONTAINS_SUBSTR(ownership_team_name, 'Kaluza')".format(fields=", ".join(fields), view=bigquery_view_name)
