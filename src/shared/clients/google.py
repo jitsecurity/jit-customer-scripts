@@ -42,8 +42,10 @@ def get_teams_from_bigquery_view() -> Organization:
             resources = [Resource(type=ResourceType.GithubRepo, name=repo)
                          for repo in row.repos]
             num_repos += len(resources)
+            members = list(dict.fromkeys(
+                row.manager_usernames + row.member_usernames))  # Remove duplicates & keep the same member order
             teams[row.ownership_team_name] = TeamStructure(
-                name=row.ownership_team_name, members=row.member_usernames, resources=resources, slack_channel=row.slack_alerting_channel)
+                name=row.ownership_team_name, members=members, resources=resources, slack_channel=row.slack_alerting_channel)
         logger.info(
             f"Retrieved ({len(teams.keys())}) teams {list(teams.keys())} with {num_repos} repos from Google BigQuery successfully.")
         return Organization(teams=list(teams.values()))
