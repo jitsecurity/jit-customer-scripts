@@ -6,15 +6,14 @@ This script allows automatically uncovering Jit Github repo assets that have a s
 
 To run the script, you'll need to prepare:
 
-- A Jit client & secret
+- A Jit client & secret [tutorial](https://docs.jit.io/docs/managing-users#generating-api-tokens)
 - The name of your Github organization
 - The name of the Github topic
 - A valid Github token with read permissions to your organization
 
 ### Quickstart
 
-- Copy the `uncover_assets_by_topic.py` and `requirements.txt` files locally.
-- Run `pip install -r requirements.txt`
+- Copy the `uncover_assets_by_topic.py` file locally.
 - Set the following environment variables locally:
   ```
   GITHUB_TOKEN=<your github token>
@@ -23,16 +22,16 @@ To run the script, you'll need to prepare:
   JIT_SECRET=<jit secret>
   TOPIC_TO_UNCOVER=<topic name to uncover by>
   ```
-- Run `python uncover_asets_by_topic.py`
+- Run `python uncover_assets_by_topic.py`
 
-You should now see that the script runs successfully, and the relevat repos get uncovered from Jit. Note that organizations with a large number of repos can take a few minutes to complete.
+You should now see that the script runs successfully, and the relevant repos get uncovered from Jit. Note that organizations with a large number of repos can take a few minutes to complete.
 
 ### Running in Github actions
 
 If you want to run the script from a Github action, choose a repository in the same organization and do the following:
 
 1. Copy the `uncover_assets_by_topic.py` to the root of the repository
-2. Add the `JIT_CLIENT_ID` and `JIT_SECRET` as repository secret:
+2. Add the `JIT_CLIENT_ID` and `JIT_SECRET` as repository secrets:
 
 - To generate & add them to Github sercrets, use the [tutorial](https://docs.jit.io/docs/managing-users#generating-api-tokens) in our docs.
 - Make sure to name the Github secrets `JIT_CLIENT_ID` and `JIT_SECRET` in the same repo.
