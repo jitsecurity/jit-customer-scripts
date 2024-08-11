@@ -31,16 +31,16 @@ You should now see that the script runs successfully, and the relevat repos get 
 
 If you want to run the script from a Github action, choose a repository in the same organization and do the following:
 
-1. Copy the `uncover_asets_by_topic.py` to the root of the repository
+1. Copy the `uncover_assets_by_topic.py` to the root of the repository
 2. Add the `JIT_CLIENT_ID` and `JIT_SECRET` as repository secret:
 
 - To generate & add them to Github sercrets, use the [tutorial](https://docs.jit.io/docs/managing-users#generating-api-tokens) in our docs.
 - Make sure to name the Github secrets `JIT_CLIENT_ID` and `JIT_SECRET` in the same repo.
-- Create the following file in the repo: `.github/workflows/deactivate_repos_by_topic.yml` with the following content:
+- Create the following file in the repo: `.github/workflows/uncover_repos_by_topic.yml` with the following content:
   - Make sure to replace `<your topic name>` with the actual topic you want to use.
 
 ```
-name: Deactivate Repos by Topic
+name: Uncover Repos by Topic
 
 on:
   workflow_dispatch:
