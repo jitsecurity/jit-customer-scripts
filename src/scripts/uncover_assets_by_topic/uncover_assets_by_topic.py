@@ -24,11 +24,11 @@ def main():
     )
     logger = logging.getLogger(__name__)
 
-    kaluze = KaluzaDeactivate(logger=logger)
-    kaluze.run(TOPIC, ORGANIZATION)
+    assets_deactivated = AssetesDeactivate(logger=logger)
+    assets_deactivated.run(TOPIC, ORGANIZATION)
 
 
-class KaluzaDeactivate:
+class AssetesDeactivate:
     def __init__(self, logger):
         self.logger = logger
 
@@ -43,12 +43,12 @@ class KaluzaDeactivate:
             self.logger.error(
                 "TOPIC_TO_UNCOVER environment variable is not set.")
             exit(1)
-        kaluza_repos = self.get_topic_repos(topic, org)
+        relevant_repos = self.get_topic_repos(topic, org)
         auth_token = self.jit_authentication()
 
         # Check if token is valid for only 1 hour
         failed_repos = []
-        for repo in kaluza_repos:
+        for repo in relevant_repos:
             try:
                 self.jit_deactivate_asset(repo, auth_token)
             except Exception as e:
