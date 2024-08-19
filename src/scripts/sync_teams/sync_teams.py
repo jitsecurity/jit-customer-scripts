@@ -21,23 +21,19 @@ logger_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <2}<
 logger.add(sys.stderr, format=logger_format)
 
 
-def parse_input_file() -> Organization:
+def parse_input_file() -> Tuple[Organization, bool]:
     """
-    Parse the input JSON file and return an Organization object.
+    Parse the input JSON file and return an Organization object and the skip_no_resources flag.
 
     Returns:
-        Organization: The parsed organization object.
+        Tuple[Organization, bool]: The parsed organization object and the skip_no_resources flag.
     """
-    # Create the argument parser
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
-
-    # Add the file argument
     parser.add_argument("file", help="Path to a JSON file")
-
-    # Parse the command line arguments
+    parser.add_argument("--skip-no-resources", action="store_true",
+                        help="Skip teams with no active resources")
     args = parser.parse_args()
 
-    # Check if the file exists and is a JSON file
     if not os.path.isfile(args.file):
         logger.error("Error: File does not exist.")
         sys.exit(1)
@@ -46,14 +42,12 @@ def parse_input_file() -> Organization:
         sys.exit(1)
     logger.info(f"Reading file: {args.file}")
 
-    # Read the JSON file
     with open(args.file, "r") as file:
         json_data = file.read()
 
-    # Parse the JSON data
     try:
         data = json.loads(json_data)
-        return Organization(teams=[TeamStructure(**team) for team in data["teams"]])
+        return Organization(teams=[TeamStructure(**team) for team in data["teams"]]), args.skip_no_resources
     except (ValidationError, KeyError) as e:
         logger.error(f"Failed to validate input file: {e}")
         sys.exit(1)
@@ -125,7 +119,7 @@ def get_teams_to_delete(topic_names: List[str], existing_team_names: List[str]) 
     return get_different_items_in_lists(existing_team_names, topic_names)
 
 
-def get_desired_teams(assets: List[Asset], organization: Organization) -> List[str]:
+def get_desired_teams(assets: List[Asset], organization: Organization, skip_no_resources: bool) -> List[str]:
     """
     Get the desired teams based on the assets and organization.
     Also filter out teams that match the TEAM_WILDCARD_TO_EXCLUDE environment variable.
@@ -133,6 +127,7 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
     Args:
         assets (List[Asset]): The list of assets.
         organization (Organization): The organization object.
+        skip_no_resources (bool): Whether to skip teams with no active resources.
 
     Returns:
         List[str]: The names of the desired teams.
@@ -143,7 +138,7 @@ def get_desired_teams(assets: List[Asset], organization: Organization) -> List[s
         for resource in team.resources:
             if resource.type == ResourceType.GithubRepo and resource.name in [asset.asset_name for asset in assets]:
                 team_resources.append(resource.name)
-        if team_resources:
+        if team_resources or not skip_no_resources:
             desired_teams.append(team.name)
         else:
             logger.info(
@@ -248,7 +243,7 @@ def main():
         logger.error("Failed to retrieve JWT token. Exiting...")
         return
 
-    organization: Organization = parse_input_file()
+    organization, skip_no_resources = parse_input_file()
     if not organization:
         logger.error("Failed to parse input file. Exiting...")
         return
@@ -259,7 +254,7 @@ def main():
     teams_to_delete, created_teams = process_teams(
         jit_token, organization, assets, existing_teams)
     existing_teams: List[TeamAttributes] = existing_teams + created_teams
-    desired_teams = get_desired_teams(assets, organization)
+    desired_teams = get_desired_teams(assets, organization, skip_no_resources)
     process_members(jit_token, organization, existing_teams, desired_teams)
     update_assets(jit_token, assets, organization, existing_teams)
 
