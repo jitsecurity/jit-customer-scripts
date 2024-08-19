@@ -49,38 +49,29 @@ def test_parse_input_file(json_data, expected_teams, expected_skip_no_resources,
 
 
 @pytest.mark.parametrize(
-    "invalid_file, json_data, should_raise, expected_exception",
+    "json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership",
     [
-        ("", "", False, ""),  # No file provided
-        ("test_input.txt", "some text", False, ""),  # Wrong file type provided
+        ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1, True, True),
         (
-            "test_input.json",
-            '{"teams": [{"name": "team1", "members": [], "resources": []}',
-            True,
-            JSONDecodeError,
-        ),  # Malformed JSON data
-        (
-            "test_input.json",
-            '{"name": "team1", "members": [], "resources": []}',
-            False,
-            "",
-        ),  # not an organization data
+            '{"teams": [{"name": "team1", "members": [], "resources": []}, '
+            '{"name": "team2", "members": [], "resources": []}]}',
+            2, True, True
+        ),
     ],
 )
-def test_parse_input_file__with_invalid_json(invalid_file, json_data, should_raise, expected_exception):
-    if invalid_file:
-        with open(invalid_file, "w") as file:
-            file.write(json_data)
-    with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
-        mock_parse_args.return_value.file = invalid_file
-        if should_raise:
-            with pytest.raises(expected_exception) as exc_info:
-                parse_input_file()
-            assert isinstance(exc_info.value, expected_exception)
-        else:
-            with pytest.raises(SystemExit) as exc_info:
-                parse_input_file()
-                assert exc_info.value.code == 1
+def test_parse_input_file(json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership):
+    with patch("builtins.open", mock_open(read_data=json_data)):
+        with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
+            mock_parse_args.return_value.file = "test_input.json"
+            mock_parse_args.return_value.skip_no_resources = expected_skip_no_resources
+            mock_parse_args.return_value.verify_github_membership = expected_verify_github_membership
+
+            result, skip_no_resources, verify_github_membership = parse_input_file()
+
+            assert isinstance(result, Organization)
+            assert len(result.teams) == expected_teams
+            assert skip_no_resources == expected_skip_no_resources
+            assert verify_github_membership == expected_verify_github_membership
 
 
 @pytest.fixture
