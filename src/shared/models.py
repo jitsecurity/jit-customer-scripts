@@ -31,7 +31,7 @@ class TeamStructure(BaseModel):
     name: str
     members: List[str] = []
     resources: List[Resource] = []
-    slack_channel: str
+    slack_channel: Optional[str]
 
 
 class Tag(BaseModel):
