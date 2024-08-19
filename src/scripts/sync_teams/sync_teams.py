@@ -33,9 +33,9 @@ def parse_input_file() -> Tuple[Organization, bool, bool]:
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
     parser.add_argument("file", help="Path to a JSON file")
     parser.add_argument("--skip-no-resources", action="store_true",
-                        help="Skip teams with no active resources", default=True)
+                        help="Skip teams with no active resources", type=bool, default=True)
     parser.add_argument("--verify-github-membership", action="store_true",
-                        help="Verify GitHub membership when setting team members", default=True)
+                        help="Verify GitHub membership when setting team members", type=bool, default=True)
     args = parser.parse_args()
 
     if not os.path.isfile(args.file):
