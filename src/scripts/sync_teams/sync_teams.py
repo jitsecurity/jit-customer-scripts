@@ -33,11 +33,16 @@ def parse_input_file() -> Tuple[Organization, bool, bool]:
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
     parser.add_argument("file", help="Path to a JSON file")
 
-    # Use 'store' to allow setting the flag to True or False
-    parser.add_argument("--skip-no-resources", type=bool, nargs='?', const=True, default=True,
-                        help="Set to False to not skip teams with no active resources (default: True)")
-    parser.add_argument("--verify-github-membership", type=bool, nargs='?', const=True, default=True,
-                        help="Set to False to not verify GitHub membership (default: True)")
+    # Default behavior is True, override with --no-skip-no-resources and --no-verify-github-membership
+    parser.add_argument("--skip-no-resources", dest='skip_no_resources', action="store_true",
+                        help="Skip teams with no active resources", default=True)
+    parser.add_argument("--no-skip-no-resources", dest='skip_no_resources', action="store_false",
+                        help="Do not skip teams with no active resources")
+
+    parser.add_argument("--verify-github-membership", dest='verify_github_membership', action="store_true",
+                        help="Verify GitHub membership when setting team members", default=True)
+    parser.add_argument("--no-verify-github-membership", dest='verify_github_membership', action="store_false",
+                        help="Do not verify GitHub membership when setting team members")
 
     args = parser.parse_args()
 
