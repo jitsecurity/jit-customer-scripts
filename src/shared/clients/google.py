@@ -48,8 +48,8 @@ def get_teams_from_bigquery_view() -> Organization:
                 name=row.ownership_team_name, members=members, resources=resources,
                 slack_channel=row.slack_alerting_channel)
         logger.info(
-            f"Retrieved({len(teams.keys())}) teams {list(teams.keys())} with {num_repos} repos
-            from Google BigQuery successfully.")
+            f"Retrieved({len(teams.keys())}) teams {list(teams.keys())} with {num_repos} repos"
+            "from Google BigQuery successfully.")
         return Organization(teams=list(teams.values()))
     except Exception as e:
         logger.error(f"Failed to retrieve teams from GitHub: {str(e)}")
