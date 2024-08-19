@@ -160,7 +160,8 @@ def get_desired_teams(assets: List[Asset], organization: Organization, skip_no_r
 
 
 def process_teams(token, organization, assets: List[Asset],
-                  existing_teams: List[TeamAttributes]) -> Tuple[List[str], List[TeamAttributes]]:
+                  existing_teams: List[TeamAttributes],
+                  skip_no_resources: bool) -> Tuple[List[str], List[TeamAttributes]]:
     """
     Process the teams in the organization and create or delete teams as necessary.
     We will delete the teams at a later stage to avoid possible synchronization issues.
@@ -169,13 +170,13 @@ def process_teams(token, organization, assets: List[Asset],
         token (str): The JWT token.
         organization (Organization): The organization object.
         existing_teams (List[TeamAttributes]): The existing teams.
-
+        skip_no_resources (bool): Whether to skip teams with no active resources.
     Returns:
         Tuple[List[str], List[TeamAttributes]]: The names of the teams to delete and the created teams.
     """
     logger.info("Determining required changes in teams.")
 
-    desired_teams = get_desired_teams(assets, organization)
+    desired_teams = get_desired_teams(assets, organization, skip_no_resources)
     existing_team_names = [team.name for team in existing_teams]
     teams_to_create = get_teams_to_create(desired_teams, existing_team_names)
     teams_to_delete = get_teams_to_delete(desired_teams, existing_team_names)
@@ -252,7 +253,7 @@ def main():
 
     existing_teams = get_existing_teams(jit_token)
     teams_to_delete, created_teams = process_teams(
-        jit_token, organization, assets, existing_teams)
+        jit_token, organization, assets, existing_teams, skip_no_resources)
     existing_teams: List[TeamAttributes] = existing_teams + created_teams
     desired_teams = get_desired_teams(assets, organization, skip_no_resources)
     process_members(jit_token, organization, existing_teams, desired_teams)
