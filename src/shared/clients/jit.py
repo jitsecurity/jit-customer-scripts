@@ -65,6 +65,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
     }
 
     all_teams = []
+    logger.info("Retrieving teams from with pagination.")
     while True:
         response = requests.get(
             'https://api.rocket.jitdev.io/teams', params=params, headers=headers)
@@ -73,7 +74,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
             teams = response_data.get('data', [])
             all_teams.extend(teams)
             after = response_data.get('metadata', {}).get('after')
-            logger.info(f"Retrieved {len(teams)} teams.")
+            logger.info(f"Retrieved {len(teams)} teams in page.")
             if not after:
                 break
 
