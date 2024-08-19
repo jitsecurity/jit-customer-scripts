@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-from math import log
-=======
->>>>>>> main
 import os
 import requests
 import time
