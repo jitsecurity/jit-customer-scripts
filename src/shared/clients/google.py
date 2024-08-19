@@ -33,7 +33,7 @@ def get_teams_from_bigquery_view() -> Organization:
         ]
 
         # Perform a query
-        query = "SELECT {fields} FROM `{view}` WHERE ARRAY_LENGTH(repos)>0 AND NOT CONTAINS_SUBSTR(ownership_team_name, 'Kaluza')".format(
+        query = "SELECT {fields} FROM `{view}` WHERE NOT CONTAINS_SUBSTR(ownership_team_name, 'Kaluza')".format(
             fields=", ".join(fields), view=bigquery_view_name)
         query_job = client.query(query)  # API request
         rows = query_job.result()  # Waits for query to finish
@@ -43,7 +43,7 @@ def get_teams_from_bigquery_view() -> Organization:
                          for repo in row.repos]
             num_repos += len(resources)
             members = list(dict.fromkeys(
-                row.manager_usernames + row.member_usernames))  # Remove duplicates & keep the same member order
+                row.managers + row.members))  # Remove duplicates & keep the same member order
             teams[row.ownership_team_name] = TeamStructure(
                 name=row.ownership_team_name, members=members, resources=resources, slack_channel=row.slack_alerting_channel)
         logger.info(
