@@ -31,7 +31,7 @@ def parse_input_file() -> Tuple[Organization, bool]:
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
     parser.add_argument("file", help="Path to a JSON file")
     parser.add_argument("--skip-no-resources", action="store_true",
-                        help="Skip teams with no active resources")
+                        help="Skip teams with no active resources", default=False)
     args = parser.parse_args()
 
     if not os.path.isfile(args.file):
