@@ -77,7 +77,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
             if not after:
                 break
 
-            params['page'] = after
+            params['after'] = after
         else:
             logger.error(
                 f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
