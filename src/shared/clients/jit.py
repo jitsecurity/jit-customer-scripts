@@ -53,42 +53,35 @@ def list_assets(token: str) -> List[Asset]:
 
 
 def get_existing_teams(token: str) -> List[TeamAttributes]:
-    def _handle_resoponse(response, existing_teams):
-        response = response.json()
-        data = response['data']
+    def _handle_response(response, existing_teams):
+        response_json = response.json()
+        data = response_json['data']
         existing_teams.extend(data)
-        after = response['metadata']['after']
-        return after
+        return response_json['metadata'].get('after')
 
     try:
-        # Make a GET request to the asset API
         url = f"{get_jit_endpoint_base_url()}/teams?limit=100"
-
         headers = get_request_headers(token)
-        response = requests.get(url, headers=headers)
         existing_teams = []
-        # Check if the request was successful
-        if response.status_code == 200:
-            after = _handle_resoponse(response, existing_teams)
-            while True:
-                response = requests.get(
-                    f"{url}&after={after}", headers=headers)
-                if response.status_code == 200:
-                    after = _handle_resoponse(response, existing_teams)
-                    if not after:
-                        break
-                else:
-                    logger.error(
-                        f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
-                    return []
+        after = None
 
-            logger.info(
-                f"Retrieved {len(existing_teams)} existing teams successfully.")
-            return [TeamAttributes(**team) for team in existing_teams]
-        else:
-            logger.error(
-                f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
-            return []
+        while True:
+            current_url = f"{url}&after={after}" if after else url
+            response = requests.get(current_url, headers=headers)
+
+            if response.status_code != 200:
+                logger.error(
+                    f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+                return []
+
+            after = _handle_response(response, existing_teams)
+
+            if not after:
+                break
+
+        logger.info(
+            f"Retrieved {len(existing_teams)} existing teams successfully.")
+        return [TeamAttributes(**team) for team in existing_teams]
     except Exception as e:
         logger.error(f"Failed to retrieve teams: {str(e)}")
         return []
