@@ -36,7 +36,7 @@ def organization():
 def test_parse_input_file(json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership):
     with patch("builtins.open", mock_open(read_data=json_data)):
         with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
-            mock_parse_args.return_value.file = "test_input.json"
+            mock_parse_args.return_value.file = "tests/test_input.json"
             mock_parse_args.return_value.skip_no_resources = expected_skip_no_resources
             mock_parse_args.return_value.verify_github_membership = expected_verify_github_membership
 
@@ -62,7 +62,7 @@ def test_parse_input_file(json_data, expected_teams, expected_skip_no_resources,
 def test_parse_input_file(json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership):
     with patch("builtins.open", mock_open(read_data=json_data)):
         with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
-            mock_parse_args.return_value.file = "test_input.json"
+            mock_parse_args.return_value.file = "tests/test_input.json"
             mock_parse_args.return_value.skip_no_resources = expected_skip_no_resources
             mock_parse_args.return_value.verify_github_membership = expected_verify_github_membership
 
