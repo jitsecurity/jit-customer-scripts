@@ -245,6 +245,7 @@ def main():
         return
 
     organization, skip_no_resources = parse_input_file()
+    logger.info(f"Running with {skip_no_resources=}")
     if not organization:
         logger.error("Failed to parse input file. Exiting...")
         return
