@@ -70,17 +70,20 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
         # Check if the request was successful
         if response.status_code == 200:
             after = _handle_resoponse(response, existing_teams)
-            while after:
+            while True:
                 response = requests.get(
                     f"{url}&after={after}", headers=headers)
                 if response.status_code == 200:
                     after = _handle_resoponse(response, existing_teams)
+                    if not after:
+                        break
                 else:
                     logger.error(
                         f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                     return []
 
-            logger.info("Retrieved existing teams successfully.")
+            logger.info(
+                f"Retrieved {len(existing_teams)} existing teams successfully.")
             return [TeamAttributes(**team) for team in existing_teams]
         else:
             logger.error(
