@@ -73,14 +73,13 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
             teams = response_data.get('data', [])
             all_teams.extend(teams)
             after = response_data.get('metadata', {}).get('after')
-
+            logger.info(f"Retrieved {len(teams)} teams.")
             if not after:
-                break  # Exit loop if there's no 'after' for the next page
+                break
 
-            # Prepare params for the next request with pagination
             params['page'] = after
         else:
-            print(
+            logger.error(
                 f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
             break
 
