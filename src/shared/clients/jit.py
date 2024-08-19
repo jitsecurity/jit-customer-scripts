@@ -62,7 +62,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
         return after
 
     try:
-        url = f"{get_jit_endpoint_base_url()}/teams?limit=100"
+        url = f"{get_jit_endpoint_base_url()}/teams?limit=50"
         headers = get_request_headers(token)
         existing_teams = []
         while True:
@@ -72,7 +72,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
                 after = _handle_response(response, existing_teams)
                 if not after:
                     break  # Exit loop if there's no 'after' for the next page
-                url = f"{get_jit_endpoint_base_url()}/teams?limit=100&after={after}"
+                url = f"{get_jit_endpoint_base_url()}/teams?limit=50&after={after}"
             else:
                 logger.error(
                     f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
