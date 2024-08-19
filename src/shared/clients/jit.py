@@ -1,4 +1,3 @@
-from math import log
 import os
 from typing import List
 from typing import Optional
@@ -78,7 +77,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
                     f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                 return []
 
-        logger.info(f"Retrieved existing teams successfully.")
+        logger.info("Retrieved existing teams successfully.")
         return [TeamAttributes(**team) for team in existing_teams]
     except Exception as e:
         logger.error(f"Failed to retrieve teams: {str(e)}")

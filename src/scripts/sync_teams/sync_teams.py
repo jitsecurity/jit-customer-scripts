@@ -59,7 +59,8 @@ def parse_input_file() -> Tuple[Organization, bool, bool]:
     logger.info(f"JSON data: {json_data}")
     try:
         data = json.loads(json_data)
-        return Organization(teams=[TeamStructure(**team) for team in data["teams"]]), args.skip_no_resources, args.verify_github_membership
+        return Organization(teams=[TeamStructure(**team) for team in data["teams"]]), \
+            args.skip_no_resources, args.verify_github_membership
     except (ValidationError, KeyError) as e:
         logger.error(f"Failed to validate input file: {e}")
         sys.exit(1)
