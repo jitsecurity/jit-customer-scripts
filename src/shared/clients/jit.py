@@ -164,13 +164,14 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
 
 
 def _perform_set_manual_team_members(token: str, team_id: str,
-                                     members: List[str], team_name: str) -> Optional[List[str]]:
+                                     members: List[str], team_name: str,
+                                     verify_github_membership: bool) -> Optional[List[str]]:
     try:
         url = f"{get_jit_endpoint_base_url()}/teams/{team_id}/members"
         headers = get_request_headers(token)
         payload = {
             "members": members,
-            "verify_github_membership": False
+            "verify_github_membership": verify_github_membership
         }
         response = requests.put(url, json=payload, headers=headers)
         if response.status_code == 200:
@@ -192,13 +193,14 @@ def _perform_set_manual_team_members(token: str, team_id: str,
         return None
 
 
-def set_manual_team_members(token: str, team_id: str, members: List[str], team_name: str) -> None:
+def set_manual_team_members(token: str, team_id: str, members: List[str],
+                            team_name: str, verify_github_membership: bool) -> None:
     retry_count = 0
     failed_members = _perform_set_manual_team_members(
-        token, team_id, members, team_name)
+        token, team_id, members, team_name, verify_github_membership)
     while retry_count <= MAX_RETRIES and failed_members:
         failed_members = _perform_set_manual_team_members(
-            token, team_id, members, team_name)
+            token, team_id, members, team_name, verify_github_membership)
         # We send all members, not just the failed ones. Otherwise it would set the list
         # to only the failed members
         retry_count += 1

@@ -21,17 +21,21 @@ logger_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <2}<
 logger.add(sys.stderr, format=logger_format)
 
 
-def parse_input_file() -> Tuple[Organization, bool]:
+def parse_input_file() -> Tuple[Organization, bool, bool]:
     """
-    Parse the input JSON file and return an Organization object and the skip_no_resources flag.
+    Parse the input JSON file and return an Organization object, the skip_no_resources flag,
+    and the verify_github_membership flag.
 
     Returns:
-        Tuple[Organization, bool]: The parsed organization object and the skip_no_resources flag.
+        Tuple[Organization, bool, bool]: The parsed organization object, the skip_no_resources flag,
+        and the verify_github_membership flag.
     """
     parser = argparse.ArgumentParser(description="Retrieve teams and assets")
     parser.add_argument("file", help="Path to a JSON file")
     parser.add_argument("--skip-no-resources", action="store_true",
-                        help="Skip teams with no active resources", default=False)
+                        help="Skip teams with no active resources", default=True)
+    parser.add_argument("--verify-github-membership", action="store_true",
+                        help="Verify GitHub membership when setting team members", default=True)
     args = parser.parse_args()
 
     if not os.path.isfile(args.file):
@@ -47,7 +51,7 @@ def parse_input_file() -> Tuple[Organization, bool]:
 
     try:
         data = json.loads(json_data)
-        return Organization(teams=[TeamStructure(**team) for team in data["teams"]]), args.skip_no_resources
+        return Organization(teams=[TeamStructure(**team) for team in data["teams"]]), args.skip_no_resources, args.verify_github_membership
     except (ValidationError, KeyError) as e:
         logger.error(f"Failed to validate input file: {e}")
         sys.exit(1)
@@ -189,7 +193,7 @@ def process_teams(token, organization, assets: List[Asset],
 
 
 def process_members(token: str, organization: Organization, existing_teams: List[TeamAttributes],
-                    desired_teams: List[str]) -> None:
+                    desired_teams: List[str], verify_github_membership: bool) -> None:
     logger.info("Processing team members.")
     for team_structure in organization.teams:
         try:
@@ -206,7 +210,7 @@ def process_members(token: str, organization: Organization, existing_teams: List
                                    f"Only the first {MAX_MEMBERS_PER_TEAM} members will be set.")
                     team_members = team_members[:MAX_MEMBERS_PER_TEAM]
                 set_manual_team_members(
-                    token, team_id, team_members, team_name)
+                    token, team_id, team_members, team_name, verify_github_membership)
             else:
                 logger.warning(
                     f"Team '{team_name}' not found in existing teams. Skipping member processing.")
@@ -244,8 +248,9 @@ def main():
         logger.error("Failed to retrieve JWT token. Exiting...")
         return
 
-    organization, skip_no_resources = parse_input_file()
-    logger.info(f"Running with {skip_no_resources=}")
+    organization, skip_no_resources, verify_github_membership = parse_input_file()
+    logger.info(
+        f"Running with {skip_no_resources=}, {verify_github_membership=}")
     if not organization:
         logger.error("Failed to parse input file. Exiting...")
         return
@@ -259,7 +264,8 @@ def main():
         jit_token, organization, assets, existing_teams, skip_no_resources)
     existing_teams: List[TeamAttributes] = existing_teams + created_teams
     desired_teams = get_desired_teams(assets, organization, skip_no_resources)
-    process_members(jit_token, organization, existing_teams, desired_teams)
+    process_members(jit_token, organization, existing_teams,
+                    desired_teams, verify_github_membership)
     update_assets(jit_token, assets, organization, existing_teams)
 
     if teams_to_delete:
