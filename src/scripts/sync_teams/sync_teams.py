@@ -253,6 +253,8 @@ def main():
     assets: List[Asset] = list_assets(jit_token)
 
     existing_teams = get_existing_teams(jit_token)
+    logger.info(
+        f"Found {len(existing_teams)} existing team(s) in the organization: {[team.name for team in existing_teams]}")
     teams_to_delete, created_teams = process_teams(
         jit_token, organization, assets, existing_teams, skip_no_resources)
     existing_teams: List[TeamAttributes] = existing_teams + created_teams

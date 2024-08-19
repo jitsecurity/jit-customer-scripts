@@ -80,8 +80,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
                         f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
                     return []
 
-            logger.info(
-                f"Retrieved existing teams successfully. {existing_teams=}")
+            logger.info("Retrieved existing teams successfully.")
             return [TeamAttributes(**team) for team in existing_teams]
         else:
             logger.error(
