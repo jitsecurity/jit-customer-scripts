@@ -1,3 +1,4 @@
+from math import log
 import os
 from typing import List
 from typing import Optional
@@ -69,10 +70,12 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
         existing_teams = []
         # Check if the request was successful
         if response.status_code == 200:
+            logger.info(f'Response: {response.json()['metadata']}')
             after = _handle_resoponse(response, existing_teams)
             while after:
                 response = requests.get(
                     f"{url}&after={after}", headers=headers)
+                logger.info(f'Response: {response.json()['metadata']}')
                 if response.status_code == 200:
                     after = _handle_resoponse(response, existing_teams)
                     logger.info(f'Afer: {after}')
