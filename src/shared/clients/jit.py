@@ -175,7 +175,8 @@ def _perform_set_manual_team_members(token: str, team_id: str,
         url = f"{get_jit_endpoint_base_url()}/teams/{team_id}/members"
         headers = get_request_headers(token)
         payload = {
-            "members": members
+            "members": members,
+            "verify_github_membership": False
         }
         response = requests.put(url, json=payload, headers=headers)
         if response.status_code == 200:
