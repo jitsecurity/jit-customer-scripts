@@ -53,35 +53,38 @@ def list_assets(token: str) -> List[Asset]:
 
 
 def get_existing_teams(token: str) -> List[TeamAttributes]:
-    def _handle_response(response, existing_teams):
-        response = response.json()
-        data = response['data']
-        existing_teams.extend(data)
-        after = response['metadata']['after']
-        return after
+    headers = {
+        'authorization': f'Bearer {token}',
+    }
 
-    try:
-        url = f"{get_jit_endpoint_base_url()}/teams?limit=50"
-        headers = get_request_headers(token)
-        existing_teams = []
-        while True:
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                logger.info(f'Response: {response.json()["metadata"]}')
-                after = _handle_response(response, existing_teams)
-                if not after:
-                    break  # Exit loop if there's no 'after' for the next page
-                url = f"{get_jit_endpoint_base_url()}/teams?limit=50&after={after}"
-            else:
-                logger.error(
-                    f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
-                return []
+    params = {
+        'limit': '50',
+        'sort_by': 'score',
+        'sort_order': 'desc',
+        'include_members': 'true',
+    }
 
-        logger.info(f"Retrieved existing teams successfully.")
-        return [TeamAttributes(**team) for team in existing_teams]
-    except Exception as e:
-        logger.error(f"Failed to retrieve teams: {str(e)}")
-        return []
+    all_teams = []
+    while True:
+        response = requests.get(
+            'https://api.rocket.jitdev.io/teams', params=params, headers=headers)
+        if response.status_code == 200:
+            response_data = response.json()
+            teams = response_data.get('data', [])
+            all_teams.extend(teams)
+            after = response_data.get('metadata', {}).get('after')
+
+            if not after:
+                break  # Exit loop if there's no 'after' for the next page
+
+            # Prepare params for the next request with pagination
+            params['page'] = after
+        else:
+            print(
+                f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
+            break
+
+    return [TeamAttributes(**team) for team in all_teams]
 
 
 def delete_teams(token, team_names):
