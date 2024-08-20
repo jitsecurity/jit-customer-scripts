@@ -53,42 +53,38 @@ def list_assets(token: str) -> List[Asset]:
 
 
 def get_existing_teams(token: str) -> List[TeamAttributes]:
-    def _handle_resoponse(response, existing_teams):
-        response = response.json()
-        data = response['data']
-        existing_teams.extend(data)
-        after = response['metadata']['after']
-        return after
+    headers = {
+        'authorization': f'Bearer {token}',
+    }
 
-    try:
-        # Make a GET request to the asset API
-        url = f"{get_jit_endpoint_base_url()}/teams?limit=100"
+    params = {
+        'limit': '50',
+        'sort_by': 'score',
+        'sort_order': 'desc',
+        'include_members': 'true',
+    }
 
-        headers = get_request_headers(token)
-        response = requests.get(url, headers=headers)
-        existing_teams = []
-        # Check if the request was successful
+    all_teams = []
+    logger.info("Retrieving teams from with pagination.")
+    while True:
+        response = requests.get(
+            f'{get_jit_endpoint_base_url()}/teams', params=params, headers=headers)
         if response.status_code == 200:
-            after = _handle_resoponse(response, existing_teams)
-            while after:
-                response = requests.get(
-                    f"{url}&after={after}", headers=headers)
-                if response.status_code == 200:
-                    after = _handle_resoponse(response, existing_teams)
-                else:
-                    logger.error(
-                        f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
-                    return []
+            response_data = response.json()
+            teams = response_data.get('data', [])
+            all_teams.extend(teams)
+            after = response_data.get('metadata', {}).get('after')
+            logger.info(f"Retrieved {len(teams)} teams in page.")
+            if not after:
+                break
 
-            logger.info("Retrieved existing teams successfully.")
-            return [TeamAttributes(**team) for team in existing_teams]
+            params['after'] = after
         else:
             logger.error(
                 f"Failed to retrieve teams. Status code: {response.status_code}, {response.text}")
-            return []
-    except Exception as e:
-        logger.error(f"Failed to retrieve teams: {str(e)}")
-        return []
+            break
+
+    return [TeamAttributes(**team) for team in all_teams]
 
 
 def delete_teams(token, team_names):
@@ -170,12 +166,14 @@ def add_teams_to_asset(token, asset: Asset, teams: List[str]):
 
 
 def _perform_set_manual_team_members(token: str, team_id: str,
-                                     members: List[str], team_name: str) -> Optional[List[str]]:
+                                     members: List[str], team_name: str,
+                                     verify_github_membership: bool) -> Optional[List[str]]:
     try:
         url = f"{get_jit_endpoint_base_url()}/teams/{team_id}/members"
         headers = get_request_headers(token)
         payload = {
-            "members": members
+            "members": members,
+            "verify_github_membership": verify_github_membership
         }
         response = requests.put(url, json=payload, headers=headers)
         if response.status_code == 200:
@@ -197,13 +195,14 @@ def _perform_set_manual_team_members(token: str, team_id: str,
         return None
 
 
-def set_manual_team_members(token: str, team_id: str, members: List[str], team_name: str) -> None:
+def set_manual_team_members(token: str, team_id: str, members: List[str],
+                            team_name: str, verify_github_membership: bool) -> None:
     retry_count = 0
     failed_members = _perform_set_manual_team_members(
-        token, team_id, members, team_name)
+        token, team_id, members, team_name, verify_github_membership)
     while retry_count <= MAX_RETRIES and failed_members:
         failed_members = _perform_set_manual_team_members(
-            token, team_id, members, team_name)
+            token, team_id, members, team_name, verify_github_membership)
         # We send all members, not just the failed ones. Otherwise it would set the list
         # to only the failed members
         retry_count += 1

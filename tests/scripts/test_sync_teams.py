@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from json.decoder import JSONDecodeError
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 import pytest
 from faker import Faker
@@ -23,58 +23,55 @@ def organization():
 
 
 @pytest.mark.parametrize(
-    "json_data, expected_teams",
+    "json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership",
     [
-        ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1),
+        ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1, True, True),
         (
             '{"teams": [{"name": "team1", "members": [], "resources": []}, '
             '{"name": "team2", "members": [], "resources": []}]}',
-            2,
+            2, True, True
         ),
     ],
 )
-def test_parse_input_file(json_data, expected_teams):
-    with open("test_input.json", "w") as file:
-        file.write(json_data)
-    with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
-        mock_parse_args.return_value.file = "test_input.json"
-        result = parse_input_file()
-        assert len(result.teams) == expected_teams
+def test_parse_input_file(json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership):
+    with patch("builtins.open", mock_open(read_data=json_data)):
+        with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
+            mock_parse_args.return_value.file = "tests/test_input.json"
+            mock_parse_args.return_value.skip_no_resources = expected_skip_no_resources
+            mock_parse_args.return_value.verify_github_membership = expected_verify_github_membership
+
+            result, skip_no_resources, verify_github_membership = parse_input_file()
+
+            assert isinstance(result, Organization)
+            assert len(result.teams) == expected_teams
+            assert skip_no_resources == expected_skip_no_resources
+            assert verify_github_membership == expected_verify_github_membership
 
 
 @pytest.mark.parametrize(
-    "invalid_file, json_data, should_raise, expected_exception",
+    "json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership",
     [
-        ("", "", False, ""),  # No file provided
-        ("test_input.txt", "some text", False, ""),  # Wrong file type provided
+        ('{"teams": [{"name": "team1", "members": [], "resources": []}]}', 1, True, True),
         (
-            "test_input.json",
-            '{"teams": [{"name": "team1", "members": [], "resources": []}',
-            True,
-            JSONDecodeError,
-        ),  # Malformed JSON data
-        (
-            "test_input.json",
-            '{"name": "team1", "members": [], "resources": []}',
-            False,
-            "",
-        ),  # not an organization data
+            '{"teams": [{"name": "team1", "members": [], "resources": []}, '
+            '{"name": "team2", "members": [], "resources": []}]}',
+            2, True, True
+        ),
     ],
 )
-def test_parse_input_file__with_invalid_json(invalid_file, json_data, should_raise, expected_exception):
-    if invalid_file:
-        with open(invalid_file, "w") as file:
-            file.write(json_data)
-    with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
-        mock_parse_args.return_value.file = invalid_file
-        if should_raise:
-            with pytest.raises(expected_exception) as exc_info:
-                parse_input_file()
-            assert isinstance(exc_info.value, expected_exception)
-        else:
-            with pytest.raises(SystemExit) as exc_info:
-                parse_input_file()
-                assert exc_info.value.code == 1
+def test_parse_input_file(json_data, expected_teams, expected_skip_no_resources, expected_verify_github_membership):
+    with patch("builtins.open", mock_open(read_data=json_data)):
+        with patch("src.scripts.sync_teams.sync_teams.argparse.ArgumentParser.parse_args") as mock_parse_args:
+            mock_parse_args.return_value.file = "tests/test_input.json"
+            mock_parse_args.return_value.skip_no_resources = expected_skip_no_resources
+            mock_parse_args.return_value.verify_github_membership = expected_verify_github_membership
+
+            result, skip_no_resources, verify_github_membership = parse_input_file()
+
+            assert isinstance(result, Organization)
+            assert len(result.teams) == expected_teams
+            assert skip_no_resources == expected_skip_no_resources
+            assert verify_github_membership == expected_verify_github_membership
 
 
 @pytest.fixture
@@ -93,26 +90,27 @@ def data():
 
 
 @pytest.mark.parametrize(
-    "label, existing_teams_indexes, asset_indexes, len_expected_teams_to_delete",
+    "label, existing_teams_indexes, asset_indexes, len_expected_teams_to_delete, skip_no_resources",
     [
-        ("No teams no assets", [], [], 0),
-        ("No teams to create and no teams to delete", "all", "all", 0),
-        ("No teams to create and teams to delete", "all", [0, 5], 8),
-        ("Teams to create and no teams to delete", [0, 5], "all", 0),
+        ("No teams no assets", [], [], 0, True),
+        ("No teams to create and no teams to delete", "all", "all", 0, True),
+        ("No teams to create and teams to delete", "all", [0, 5], 8, True),
+        ("Teams to create and no teams to delete", [0, 5], "all", 0, False),
     ]
 )
-def test_process_teams(label, existing_teams_indexes, asset_indexes, data, len_expected_teams_to_delete):
+def test_process_teams(label, existing_teams_indexes, asset_indexes, len_expected_teams_to_delete,
+                       skip_no_resources, data):
     organization, assets, existing_teams = data
-    existing_teams = [existing_teams[i] for i in
-                      existing_teams_indexes] if existing_teams_indexes != "all" else existing_teams
-    assets = [assets[i] for i in
-              asset_indexes] if asset_indexes != "all" else assets
+    existing_teams = [existing_teams[i]
+                      for i in existing_teams_indexes] if existing_teams_indexes != "all" else existing_teams
+    assets = [assets[i]
+              for i in asset_indexes] if asset_indexes != "all" else assets
 
     with patch("src.scripts.sync_teams.sync_teams.get_existing_teams") as mock_get_existing_teams:
         with patch("src.scripts.sync_teams.sync_teams.create_teams") as mock_create_teams:
             mock_get_existing_teams.return_value = existing_teams
             teams_to_delete, created_teams = process_teams(
-                "token", organization, assets, existing_teams)
+                "token", organization, assets, existing_teams, skip_no_resources)
             assert len(teams_to_delete) == len_expected_teams_to_delete
 
 

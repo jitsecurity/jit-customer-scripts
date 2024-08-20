@@ -1,5 +1,7 @@
 pydantic==2.1.1
 PyGithub==1.59.1
 python-dotenv==1.0.0
+pytz==2024.1
+google-cloud-bigquery==3.19.0
 requests==2.31.0
 loguru==0.7.0
