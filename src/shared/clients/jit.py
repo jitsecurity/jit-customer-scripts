@@ -68,7 +68,7 @@ def get_existing_teams(token: str) -> List[TeamAttributes]:
     logger.info("Retrieving teams from with pagination.")
     while True:
         response = requests.get(
-            'https://api.rocket.jitdev.io/teams', params=params, headers=headers)
+            f'{get_jit_endpoint_base_url()}/teams', params=params, headers=headers)
         if response.status_code == 200:
             response_data = response.json()
             teams = response_data.get('data', [])
