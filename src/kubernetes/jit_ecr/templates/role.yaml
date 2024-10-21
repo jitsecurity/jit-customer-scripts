@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: role-access-to-jit-ecr-secret
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["delete"]
+  resourceNames: ["{{ .Values.jit_ecr_secret_name }}"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+  resourceNames: ["ecr-registry-helper-secrets"]

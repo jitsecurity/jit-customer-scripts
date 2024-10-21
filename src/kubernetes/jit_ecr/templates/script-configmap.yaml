@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jit-ecr-script
+  namespace: {{ .Values.namespace }}
+data:
+  jit-ecr-script.sh: |
+    #!/bin/sh
+    set -e
+
+    # Install jq
+    apk add --no-cache jq
+
+    # Wait for the secret to be available
+    until kubectl get secret ecr-registry-helper-secrets -n {{ .Values.namespace }}; do
+      echo "Waiting for secret ecr-registry-helper-secrets to be created..."
+      sleep 5
+    done
+
+    # Read credentials from the secret
+    CLIENT_ID=$(kubectl get secret ecr-registry-helper-secrets -n {{ .Values.namespace }} -o jsonpath='{.data.client_id}' | base64 -d)
+    SECRET=$(kubectl get secret ecr-registry-helper-secrets -n {{ .Values.namespace }} -o jsonpath='{.data.secret}' | base64 -d)
+
+    # Perform login to get access token
+    echo "Requesting access token..."
+    AUTH_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST {{ .Values.jit_base_url }}/authentication/login \
+      -H "Content-Type: application/json" \
+      -d "{\"clientId\": \"$CLIENT_ID\", \"secret\": \"$SECRET\"}")
+    AUTH_STATUS=$(echo "$AUTH_RESPONSE" | tail -n1)
+    AUTH_BODY=$(echo "$AUTH_RESPONSE" | sed '$d')
+
+    if [ "$AUTH_STATUS" -ne 200 ]; then
+      echo "Failed to obtain access token. HTTP Status: $AUTH_STATUS"
+      echo "Response body: $AUTH_BODY"
+      exit 1
+    fi
+
+    ACCESS_TOKEN=$(echo "$AUTH_BODY" | jq -r '.accessToken')
+
+    if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then
+      echo "Failed to extract access token from response"
+      echo "Response body: $AUTH_BODY"
+      exit 1
+    fi
+
+    echo "Access token obtained successfully"
+
+    # Use access token to get ECR credentials
+    echo "Requesting ECR token..."
+    ECR_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST {{ .Values.jit_base_url }}/authentication/registry/login \
+      -H "Authorization: Bearer $ACCESS_TOKEN")
+    ECR_STATUS=$(echo "$ECR_RESPONSE" | tail -n1)
+    ECR_BODY=$(echo "$ECR_RESPONSE" | sed '$d')
+
+    if [ "$ECR_STATUS" -ne 200 ]; then
+      echo "Failed to obtain ECR token. HTTP Status: $ECR_STATUS"
+      echo "Response body: $ECR_BODY"
+      exit 1
+    fi
+
+    ECR_TOKEN="$ECR_BODY"
+
+    if [ -z "$ECR_TOKEN" ]; then
+      echo "Failed to obtain ECR token"
+      echo "Response body: $ECR_BODY"
+      exit 1
+    fi
+
+    echo "ECR token obtained successfully"
+
+    # Delete existing Kubernetes Docker registry secret (ignore if not found)
+    echo "Deleting existing Kubernetes secret (if any)..."
+    kubectl delete secret {{ .Values.jit_ecr_secret_name }} -n {{ .Values.namespace }} 2>/dev/null || true
+
+    # Create new Kubernetes Docker registry secret
+    echo "Creating new Kubernetes secret..."
+    kubectl create secret docker-registry {{ .Values.jit_ecr_secret_name }} \
+      --docker-server={{ .Values.registry_name }} \
+      --docker-username=AWS \
+      --docker-password="$ECR_TOKEN" \
+      --namespace={{ .Values.namespace }}
+
+    # Get current date and time
+    CURRENT_DATE=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo "ECR credentials updated successfully on $CURRENT_DATE"

@@ -1,0 +1,28 @@
+{{- if .Values.client_id }}
+{{- if .Values.secret }}
+Congratulations! You've installed the JIT ECR credentials manager.
+
+To verify that the initial login was successful, run the following command:
+
+kubectl logs -n {{ .Values.namespace }} $(kubectl get pods -n {{ .Values.namespace }} -l job-name=jit-ecr-initial-login --sort-by=.metadata.creationTimestamp --output=jsonpath='{.items[-1:].metadata.name}')
+
+This command will display the logs of the most recently created pod for the initial login job. Look for the message "ECR credentials updated successfully on <date>" at the end of the logs.
+
+If you don't see the success message or encounter any errors, you can describe the job for more information:
+kubectl describe job jit-ecr-initial-login -n {{ .Values.namespace }}
+
+The ECR credentials secret has been created as {{ .Values.jit_ecr_secret_name }} in the {{ .Values.namespace }} namespace.
+
+To verify the created secret, run:
+kubectl get secret {{ .Values.jit_ecr_secret_name }} --namespace {{ .Values.namespace }}
+
+A CronJob has also been set up to refresh these credentials periodically. You can check its status and logs with:
+kubectl get cronjob -n {{ .Values.namespace }} jit-ecr-refresh
+kubectl logs -n {{ .Values.namespace }} $(kubectl get pods -n {{ .Values.namespace }} -l cronjob-name=jit-ecr-refresh --sort-by=.metadata.creationTimestamp --output=jsonpath='{.items[-1:].metadata.name}')
+
+{{- else }}
+Error: "secret" value is mandatory.
+{{- end }}
+{{- else }}
+Error: "client_id" value is mandatory.
+{{- end }}

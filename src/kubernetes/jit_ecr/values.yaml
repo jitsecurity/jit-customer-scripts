@@ -1,0 +1,24 @@
+# Obtained from https://docs.jit.io/docs/managing-users#generating-api-tokens,
+# Use "Member" role
+# Please save those values in a secured place.
+client_id: "<JIT_API_CLIENT_ID>"
+secret: "<JIT_API_SECRET>"
+
+# The base URL for Jit APIs
+jit_base_url: "https://api.jit.io"
+
+# The Jit registry name
+registry_name: "registry.jit.io"
+
+# keep job history for 1 day
+keep_job_history_seconds: 86400
+
+# Namespace to put the jobs and secrets
+namespace: "default"
+
+# The name of the secret to be used to pull from jit-ecr - should match the k8s runner configuration, for example on gitlab:
+#      [runners.kubernetes]
+#         poll_timeout = 2000
+#         node_selector_overwrite_allowed = ".*"
+#         image_pull_secrets=["jit-registry-creds"]
+jit_ecr_secret_name: "jit-registry-creds"

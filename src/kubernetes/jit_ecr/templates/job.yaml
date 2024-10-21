@@ -1,0 +1,38 @@
+{{- if .Values.client_id }}
+{{- if .Values.secret }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jit-ecr-initial-login
+  namespace: {{ .Values.namespace }}
+spec:
+  ttlSecondsAfterFinished: {{ .Values.keep_job_history_seconds }}
+  template:
+    spec:
+      serviceAccountName: sa-jit-ecr
+      containers:
+        - name: jit-ecr-initial-login
+          image: alpine/k8s:1.26.8
+          command: ["/bin/sh", "/scripts/jit-ecr-script.sh"]
+          volumeMounts:
+            - name: secrets
+              mountPath: /secrets
+              readOnly: true
+            - name: script-volume
+              mountPath: /scripts
+              readOnly: true
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      volumes:
+        - name: secrets
+          secret:
+            secretName: ecr-registry-helper-secrets
+        - name: script-volume
+          configMap:
+            name: jit-ecr-script
+      restartPolicy: OnFailure
+{{- end }}
+{{- end }}
