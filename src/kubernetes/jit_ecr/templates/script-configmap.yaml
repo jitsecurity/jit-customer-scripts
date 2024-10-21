@@ -45,28 +45,28 @@ data:
 
     echo "Access token obtained successfully"
 
-    # Use access token to get ECR credentials
-    echo "Requesting ECR token..."
-    ECR_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST {{ .Values.jit_base_url }}/authentication/registry/login \
+    # Use access token to get registry credentials
+    echo "Requesting registry token..."
+    REGISTRY_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST {{ .Values.jit_base_url }}/authentication/registry/login \
       -H "Authorization: Bearer $ACCESS_TOKEN")
-    ECR_STATUS=$(echo "$ECR_RESPONSE" | tail -n1)
-    ECR_BODY=$(echo "$ECR_RESPONSE" | sed '$d')
+    REGISTRY_STATUS=$(echo "$REGISTRY_RESPONSE" | tail -n1)
+    REGISTRY_BODY=$(echo "$REGISTRY_RESPONSE" | sed '$d')
 
-    if [ "$ECR_STATUS" -ne 200 ]; then
-      echo "Failed to obtain ECR token. HTTP Status: $ECR_STATUS"
-      echo "Response body: $ECR_BODY"
+    if [ "$REGISTRY_STATUS" -ne 200 ]; then
+      echo "Failed to obtain registry token. HTTP Status: $REGISTRY_STATUS"
+      echo "Response body: $REGISTRY_BODY"
       exit 1
     fi
 
-    ECR_TOKEN="$ECR_BODY"
+    REGISTRY_TOKEN="$REGISTRY_BODY"
 
-    if [ -z "$ECR_TOKEN" ]; then
-      echo "Failed to obtain ECR token"
-      echo "Response body: $ECR_BODY"
+    if [ -z "$REGISTRY_TOKEN" ]; then
+      echo "Failed to obtain registry token"
+      echo "Response body: $REGISTRY_BODY"
       exit 1
     fi
 
-    echo "ECR token obtained successfully"
+    echo "registry token obtained successfully"
 
     # Delete existing Kubernetes Docker registry secret (ignore if not found)
     echo "Deleting existing Kubernetes secret (if any)..."
@@ -77,10 +77,10 @@ data:
     kubectl create secret docker-registry {{ .Values.jit_ecr_secret_name }} \
       --docker-server={{ .Values.registry_name }} \
       --docker-username=AWS \
-      --docker-password="$ECR_TOKEN" \
+      --docker-password="$REGISTRY_TOKEN" \
       --namespace={{ .Values.namespace }}
 
     # Get current date and time
     CURRENT_DATE=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo "ECR credentials updated successfully on $CURRENT_DATE"
+    echo "Registry credentials updated successfully on $CURRENT_DATE"
