@@ -1,0 +1,4 @@
+apiVersion: v2
+name: jit_ecr
+version: 0.1.0
+description: Helm chart to manage registry credentials for JIT using authentication APIs
