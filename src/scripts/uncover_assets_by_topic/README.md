@@ -22,7 +22,6 @@ To run the script, you'll need to prepare:
   JIT_SECRET=<jit secret>
   TOPIC_TO_UNCOVER=<topic name to uncover by>
   ```
-- Run `python uncover_assets_by_topic.py`
 
 You should now see that the script runs successfully, and the relevant repos get uncovered from Jit. Note that organizations with a large number of repos can take a few minutes to complete.
 
