@@ -13,7 +13,7 @@ stages:
 sync-teams:
   stage: sync-teams
   script:
-    - pip install requests urllib3
+    - pip install -r src/scripts/gitlab_team_resource_manager/requirements.txt
     - |
       if [ ! -f $STATE_FILE ]; then
         echo '{"current_team_index": 0}' > $STATE_FILE
