@@ -1,0 +1,34 @@
+image: python:3.9-slim
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+
+cache:
+  paths:
+    - .pip-cache/
+
+stages:
+  - sync-teams
+
+sync-teams:
+  stage: sync-teams
+  script:
+    - pip install requests urllib3
+    - |
+      if [ ! -f $STATE_FILE ]; then
+        echo '{"current_team_index": 0}' > $STATE_FILE
+      fi
+    - python src/scripts/gitlab_team_resource_manager/gitlab_team_resource_manager.py
+  variables:
+    JIT_CLIENT_ID: ${JIT_CLIENT_ID}
+    JIT_CLIENT_SECRET: ${JIT_CLIENT_SECRET}
+    TEAM_METADATA_FILE: "team_metadata.json"
+    TEAM_STATE_FILE: ${STATE_FILE}
+  environment:
+    name: production
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" 
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: always
+    - when: never 

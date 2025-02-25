@@ -1,0 +1,22 @@
+{
+    "teams": [
+      {
+        "name": "tomerTeam",
+        "members": [
+          "tomer"
+        ],
+        "resources": [
+          {
+            "type": "repo",
+            "name": "test-tomer",
+            "vendor": "gitlab"
+          },
+          {
+            "type": "repo",
+            "name": "test-tomer2",
+            "vendor": "gitlab"
+          }
+        ]
+      }
+    ]
+  }
