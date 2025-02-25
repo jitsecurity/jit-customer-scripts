@@ -19,10 +19,10 @@ This tool manages team resources in GitLab by automatically updating asset cover
    ```bash
    # Remove the original remote
    git remote remove origin
-   
+
    # Add your GitLab repository as the new remote
    git remote add origin https://gitlab.com/your-organization/jit-customer-scripts.git
-   
+
    # Push to your GitLab repository
    git push -u origin main
    ```
