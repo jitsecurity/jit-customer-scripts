@@ -1,19 +1,15 @@
 {
     "teams": [
       {
-        "name": "tomerTeam",
+        "name": "Team Name",
         "members": [
-          "tomer"
+          "member1",
+          "member2"
         ],
         "resources": [
           {
-            "type": "repo",
-            "name": "test-tomer",
-            "vendor": "gitlab"
-          },
-          {
-            "type": "repo",
-            "name": "test-tomer2",
+            "type": "repository",
+            "name": "repo-name",
             "vendor": "gitlab"
           }
         ]

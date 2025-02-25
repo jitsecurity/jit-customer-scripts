@@ -408,12 +408,12 @@ def main():
     target_team = None
     for team in team_metadata.teams:
         if not team.resources:
-            continue     
+            continue
         # Check if any resource name is in the assets
         resource_names = [r.name for r in team.resources]
         matching_resources = [
             name for name in resource_names if name in asset_names
-        ]  
+        ]
         if matching_resources:
             target_team = team
             manager.logger.info(
