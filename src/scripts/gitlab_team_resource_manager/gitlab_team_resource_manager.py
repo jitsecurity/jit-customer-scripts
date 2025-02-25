@@ -358,7 +358,8 @@ def main():
     4. Reads and parses team metadata
     5. Fetches uncovered assets
     6. Finds first team with matching resources
-    7. Updates coverage for matching assets
+    7. Updates coverage for matching assets (up to 100 assets)
+    8. Excludes archived assets
 
     Exit codes:
         0: Success or no action needed
@@ -401,75 +402,138 @@ def main():
         manager.logger.error("No assets found")
         sys.exit(1)
 
+    # Filter out archived assets
+    active_assets = [
+        asset for asset in assets
+        if not asset.get("is_archived", False)
+    ]
+    manager.logger.info(
+        "Filtered %d assets, removed %d archived assets",
+        len(active_assets),
+        len(assets) - len(active_assets)
+    )
+
+    # Use only active assets from now on
+    assets = active_assets
+
     # Extract all asset names from the assets
     asset_names = [asset.get("asset_name", "") for asset in assets]
-    manager.logger.info("Found %d assets", len(asset_names))
+    manager.logger.info("Found %d active assets", len(asset_names))
 
-    # Find the first team with resources that match assets
-    target_team = None
+    # Process teams until we reach 100 assets or run out of teams
+    assets_to_update = []
+    processed_teams = []
+
     for team in team_metadata.teams:
         if not team.resources:
             continue
+
         # Check if any resource name is in the assets
         resource_names = [r.name for r in team.resources]
         matching_resources = [
             name for name in resource_names if name in asset_names
         ]
-        if matching_resources:
-            target_team = team
+
+        if not matching_resources:
+            continue
+
+        # Found a team with matching resources
+        manager.logger.info(
+            "Found team with matching resources: %s", team.name
+        )
+        manager.logger.info(
+            "Matching resources: %s", matching_resources
+        )
+
+        # Get all assets for this team before deciding to process
+        team_assets = []
+        for asset in assets:
+            if asset.get("asset_name") in resource_names:
+                team_assets.append({
+                    "asset_id": asset["asset_id"],
+                    "is_covered": True,
+                    "tags": []
+                })
+
+        # Check if adding this team would exceed our 100 asset limit
+        if len(assets_to_update) + len(team_assets) > 100:
             manager.logger.info(
-                "Found team with matching resources: %s", team.name
+                "Skipping team '%s' - would exceed 100 asset limit",
+                team.name
             )
-            manager.logger.info(
-                "Matching resources: %s", matching_resources
-            )
+            # If this is the first team and it has more than 100 assets,
+            # we need to process it anyway (up to 100)
+            if not assets_to_update:
+                manager.logger.info(
+                    "Processing first 100 assets for team '%s'",
+                    team.name
+                )
+                assets_to_update = team_assets[:100]
+                processed_teams.append({
+                    "team": team,
+                    "count": len(assets_to_update)
+                })
+                break
+            # Otherwise, we've already processed some teams, so we're done
+            continue
+
+        # Add this team's assets to our update list
+        assets_to_update.extend(team_assets)
+        processed_teams.append({
+            "team": team,
+            "count": len(team_assets)
+        })
+
+        manager.logger.info(
+            "Added %d assets from team '%s', total: %d",
+            len(team_assets),
+            team.name,
+            len(assets_to_update)
+        )
+
+        # If we've reached our limit, stop processing teams
+        if len(assets_to_update) >= 100:
+            manager.logger.info("Reached limit of 100 assets to update")
             break
 
-    if not target_team:
-        manager.logger.info("No team with matching resources found")
-        sys.exit(0)
-
-    manager.logger.info("Processing team: %s", target_team.name)
-
-    # Get resource names for the target team
-    resource_names = [r.name for r in target_team.resources]
-    manager.logger.info("Team members: %s", target_team.members)
-    manager.logger.info("Team resources: %s", resource_names)
-
-    # Update coverage for matching assets
-    assets_to_update = []
-    for asset in assets:
-        if asset.get("asset_name") in resource_names:
-            manager.logger.info("Updating asset: %s", asset["asset_id"])
-            assets_to_update.append(
-                {"asset_id": asset["asset_id"], "is_covered": True, "tags": []}
-            )
-
+    # Update the assets if we have any
     if assets_to_update:
-        count = len(assets_to_update)
+        total_count = len(assets_to_update)
+
+        # Log summary for each team
+        manager.logger.info("===== TEAM UPDATE SUMMARY =====")
+        for team_info in processed_teams:
+            manager.logger.info(
+                "Team '%s': %d assets",
+                team_info["team"].name,
+                team_info["count"]
+            )
         manager.logger.info(
-            "TEAM UPDATE SUMMARY: Team '%s' - Updating %d assets",
-            target_team.name,
-            count
+            "Total assets to update: %d",
+            total_count
         )
+
+        # Perform the update
         success = manager.update_asset_coverage(assets_to_update)
+
         if success:
             manager.logger.info(
-                "UPDATE COMPLETE: Updated %d assets for team '%s'",
-                count,
-                target_team.name
+                "UPDATE COMPLETE: Successfully updated %d assets",
+                total_count
             )
+            for team_info in processed_teams:
+                manager.logger.info(
+                    "- Team '%s': %d assets",
+                    team_info["team"].name,
+                    team_info["count"]
+                )
         else:
             manager.logger.error(
-                "UPDATE FAILED: Failed to update %d assets for team '%s'",
-                count,
-                target_team.name
+                "UPDATE FAILED: Failed to update %d assets",
+                total_count
             )
     else:
-        manager.logger.info(
-            "NO UPDATES NEEDED: Team '%s' has no assets to update",
-            target_team.name
-        )
+        manager.logger.info("NO UPDATES NEEDED: No assets to update")
 
 
 if __name__ == "__main__":
