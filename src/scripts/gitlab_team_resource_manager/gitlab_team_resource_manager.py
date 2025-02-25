@@ -420,7 +420,7 @@ def main():
     asset_names = [asset.get("asset_name", "") for asset in assets]
     manager.logger.info("Found %d active assets", len(asset_names))
 
-    # Process teams until we reach 100 assets or run out of teams
+    # Process teams until we reach 120 assets or run out of teams
     assets_to_update = []
     processed_teams = []
 
@@ -455,20 +455,20 @@ def main():
                     "tags": []
                 })
 
-        # Check if adding this team would exceed our 100 asset limit
-        if len(assets_to_update) + len(team_assets) > 100:
+        # Check if adding this team would exceed our 120 asset limit
+        if len(assets_to_update) + len(team_assets) > 120:
             manager.logger.info(
-                "Skipping team '%s' - would exceed 100 asset limit",
+                "Skipping team '%s' - would exceed 120 asset limit",
                 team.name
             )
-            # If this is the first team and it has more than 100 assets,
-            # we need to process it anyway (up to 100)
+            # If this is the first team and it has more than 120 assets,
+            # we need to process it anyway (up to 120)
             if not assets_to_update:
                 manager.logger.info(
-                    "Processing first 100 assets for team '%s'",
+                    "Processing first 120 assets for team '%s'",
                     team.name
                 )
-                assets_to_update = team_assets[:100]
+                assets_to_update = team_assets[:120]
                 processed_teams.append({
                     "team": team,
                     "count": len(assets_to_update)
@@ -492,8 +492,8 @@ def main():
         )
 
         # If we've reached our limit, stop processing teams
-        if len(assets_to_update) >= 100:
-            manager.logger.info("Reached limit of 100 assets to update")
+        if len(assets_to_update) >= 120:
+            manager.logger.info("Reached limit of 120 assets to update")
             break
 
     # Update the assets if we have any
