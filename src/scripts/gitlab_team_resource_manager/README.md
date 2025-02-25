@@ -2,7 +2,11 @@
 
 This tool manages team resources in GitLab by automatically updating asset coverage based on team metadata configuration.
 
-## Overview
+## Important Notes
+
+- This script is designed to be run on a daily schedule.
+- The script will only update assets that are not currently covered by a team resource.
+- The script will update the coverage by the order of the team metadata file.
 
 ## Configuration
 1. Run git clone https://github.com/jitsecurity/jit-customer-scripts.git

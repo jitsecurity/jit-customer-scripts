@@ -447,10 +447,29 @@ def main():
 
     if assets_to_update:
         count = len(assets_to_update)
-        manager.logger.info("Updating coverage for %d assets", count)
-        manager.update_asset_coverage(assets_to_update)
+        manager.logger.info(
+            "TEAM UPDATE SUMMARY: Team '%s' - Updating %d assets",
+            target_team.name,
+            count
+        )
+        success = manager.update_asset_coverage(assets_to_update)
+        if success:
+            manager.logger.info(
+                "UPDATE COMPLETE: Updated %d assets for team '%s'",
+                count,
+                target_team.name
+            )
+        else:
+            manager.logger.error(
+                "UPDATE FAILED: Failed to update %d assets for team '%s'",
+                count,
+                target_team.name
+            )
     else:
-        manager.logger.info("No assets need coverage update")
+        manager.logger.info(
+            "NO UPDATES NEEDED: Team '%s' has no assets to update",
+            target_team.name
+        )
 
 
 if __name__ == "__main__":
