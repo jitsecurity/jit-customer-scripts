@@ -31,4 +31,4 @@ sync-teams:
       when: always
     - if: $CI_PIPELINE_SOURCE == "web"
       when: always
-    - when: never 
+    - when: never
