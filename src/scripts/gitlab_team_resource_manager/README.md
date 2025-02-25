@@ -7,13 +7,19 @@ This tool manages team resources in GitLab by automatically updating asset cover
 ## Configuration
 1. Run git clone https://github.com/jitsecurity/jit-customer-scripts.git
 2. Navigate to [Jit platform](https://platform.jit.io/) => Settings => User and Permissions => API Tokens => Generate Token
-3. Copy the `JIT_CLIENT_ID` and `JIT_CLIENT_SECRET`
-4. Add the environment variables in GitLab:
+   ![image](https://github.com/user-attachments/assets/897cdc35-fb01-48b0-9ffa-6ed65f3b62de)
+   ![image](https://github.com/user-attachments/assets/7ba48c2f-01dc-43fa-ad12-0d33bb8789eb)
+
+
+4. Copy the `JIT_CLIENT_ID` and `JIT_CLIENT_SECRET`
+5. Add the environment variables in GitLab:
     - Go to Project > Build > Pipeline Schedules > New schedule
     - Select Description, Timezone, Interval Pattern: everyday, branch: main, Variables: JIT_CLIENT_ID and JIT_CLIENT_SECRET
     - Click on Create pipeline schedule
+  ![image](https://github.com/user-attachments/assets/c5b25d63-d2be-44fc-a0bf-1f7089df4794)
 
-5. Update `team_metadata.json` file in the repository with the following structure:
+
+7. Update `team_metadata.json` file in the repository with the following structure:
 
 ```json
 {
