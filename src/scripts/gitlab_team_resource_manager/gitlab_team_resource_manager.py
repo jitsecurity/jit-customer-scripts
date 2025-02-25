@@ -1,3 +1,21 @@
+"""
+GitLab Team Resource Manager
+
+This script manages team resources in GitLab by automatically updating asset
+coverage in the JIT platform. It processes team metadata to identify resources
+and updates their coverage status based on matching criteria.
+
+Flow:
+1. Authenticates with JIT API
+2. Reads team metadata from JSON file
+3. Fetches uncovered assets from JIT API
+4. Matches assets with team resources
+5. Updates coverage status for matching assets
+
+The script uses pagination to handle large numbers of assets and includes
+retry logic for API requests to handle temporary failures.
+"""
+
 import os
 import json
 import requests
@@ -17,6 +35,14 @@ JIT_API_ENDPOINT = "https://api.jit.io"
 
 @dataclass
 class Resource:
+    """
+    Represents a team resource with its type, name, and vendor.
+    
+    Attributes:
+        type: The type of resource (e.g., 'repository')
+        name: The name of the resource
+        vendor: The vendor of the resource (e.g., 'gitlab')
+    """
     type: str
     name: str
     vendor: str
@@ -24,6 +50,14 @@ class Resource:
 
 @dataclass
 class Team:
+    """
+    Represents a team with its name, members, and resources.
+    
+    Attributes:
+        name: The name of the team
+        members: List of team member identifiers
+        resources: List of Resource objects associated with the team
+    """
     name: str
     members: List[str]
     resources: List[Resource]
@@ -31,10 +65,34 @@ class Team:
 
 @dataclass
 class TeamMetadata:
+    """
+    Contains metadata for all teams.
+    
+    Attributes:
+        teams: List of Team objects
+    """
     teams: List[Team]
 
     @classmethod
     def from_dict(cls, data: Dict) -> "TeamMetadata":
+        """
+        Creates a TeamMetadata instance from a dictionary.
+        
+        Args:
+            data: Dict containing team data with structure:
+                 {
+                     "teams": [
+                         {
+                             "name": str,
+                             "members": List[str],
+                             "resources": List[Dict]
+                         }
+                     ]
+                 }
+        
+        Returns:
+            TeamMetadata instance populated with the provided data
+        """
         teams = []
         for team_data in data.get("teams", []):
             resources = [
@@ -51,13 +109,42 @@ class TeamMetadata:
 
 
 class JitAssetManager:
+    """
+    Manages JIT assets including authentication, fetching, and updating coverage.
+    
+    This class handles all interactions with the JIT API, including:
+    - Authentication using client credentials
+    - Fetching assets with pagination
+    - Updating asset coverage status
+    - Retry logic for API requests
+    
+    Attributes:
+        client_id: JIT API client ID
+        client_secret: JIT API client secret
+        token: Authentication token (set after successful auth)
+        logger: Configured logger instance
+    """
+
     def __init__(self, client_id: str, client_secret: str):
+        """
+        Initializes the JIT Asset Manager.
+        
+        Args:
+            client_id: JIT API client ID
+            client_secret: JIT API client secret
+        """
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = None
         self.logger = self._setup_logger()
 
     def _setup_logger(self) -> logging.Logger:
+        """
+        Configures and returns a logger instance.
+        
+        Returns:
+            Configured logging.Logger instance
+        """
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
         handler = logging.StreamHandler(sys.stdout)
@@ -68,7 +155,15 @@ class JitAssetManager:
         return logger
 
     def authenticate(self) -> bool:
-        """Authenticate with JIT API and get access token."""
+        """
+        Authenticates with JIT API using client credentials.
+        
+        Performs authentication using the provided client ID and secret.
+        Sets the token attribute upon successful authentication.
+        
+        Returns:
+            bool: True if authentication successful, False otherwise
+        """
         auth_url = f"{JIT_API_ENDPOINT}/authentication/login"
         auth_payload = {
             "clientId": self.client_id,
@@ -101,7 +196,15 @@ class JitAssetManager:
             return False
 
     def get_all_assets(self) -> List[Dict]:
-        """Fetch all assets using pagination."""
+        """
+        Fetches all uncovered assets using pagination.
+        
+        Makes paginated requests to the JIT API to fetch all uncovered assets.
+        Handles pagination using the 'after' parameter from response metadata.
+        
+        Returns:
+            List[Dict]: List of asset dictionaries containing asset details
+        """
         if not self.token:
             self.logger.error("No authentication token available")
             return []
@@ -163,7 +266,22 @@ class JitAssetManager:
         return assets
 
     def update_asset_coverage(self, asset_updates: List[Dict]) -> bool:
-        """Update coverage status for multiple assets."""
+        """
+        Updates coverage status for multiple assets.
+        
+        Args:
+            asset_updates: List of dictionaries with structure:
+                         [
+                             {
+                                 "asset_id": str,
+                                 "is_covered": bool,
+                                 "tags": List[str]
+                             }
+                         ]
+        
+        Returns:
+            bool: True if update successful, False otherwise
+        """
         if not self.token:
             self.logger.error("No authentication token available")
             return False
@@ -201,7 +319,20 @@ class JitAssetManager:
     def _send_request(
         self, url: str, method: str = "GET", **kwargs
     ) -> requests.Response:
-        """Send HTTP request with retry logic."""
+        """
+        Sends HTTP request with retry logic.
+        
+        Configures and sends HTTP requests with automatic retries for failed
+        requests. Uses exponential backoff for retries.
+        
+        Args:
+            url: Target URL for the request
+            method: HTTP method (GET, POST, etc.)
+            **kwargs: Additional arguments passed to requests.request()
+        
+        Returns:
+            requests.Response: Response from the API
+        """
         session = requests.Session()
         retry = Retry(
             total=MAX_RETRIES,
@@ -216,6 +347,22 @@ class JitAssetManager:
 
 
 def main():
+    """
+    Main execution function for the GitLab Team Resource Manager.
+    
+    Process:
+    1. Validates environment variables and configuration
+    2. Initializes JIT Asset Manager
+    3. Authenticates with JIT API
+    4. Reads and parses team metadata
+    5. Fetches uncovered assets
+    6. Finds first team with matching resources
+    7. Updates coverage for matching assets
+    
+    Exit codes:
+        0: Success or no action needed
+        1: Error occurred (missing config, authentication failure, etc.)
+    """
     # Get credentials from environment variables
     client_id = os.getenv("JIT_CLIENT_ID")
     client_secret = os.getenv("JIT_CLIENT_SECRET")

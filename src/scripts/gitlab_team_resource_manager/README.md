@@ -4,25 +4,16 @@ This tool manages team resources in GitLab by automatically updating asset cover
 
 ## Overview
 
-The GitLab Team Resource Manager script:
-1. Fetches uncovered assets from JIT API
-2. Matches assets with team resources defined in metadata
-3. Updates coverage status for matching assets
-
 ## Configuration
+1. Run git clone https://github.com/jitsecurity/jit-customer-scripts.git
+2. Navigate to [Jit platform](https://platform.jit.io/) => Settings => User and Permissions => API Tokens => Generate Token
+3. Copy the `JIT_CLIENT_ID` and `JIT_CLIENT_SECRET`
+4. Add the environment variables in GitLab:
+    - Go to Project > Build > Pipeline Schedules > New schedule
+    - Select Description, Timezone, Interval Pattern: everyday, branch: main, Variables: JIT_CLIENT_ID and JIT_CLIENT_SECRET
+    - Click on Create pipeline schedule
 
-### 1. Environment Variables
-
-Set the following environment variables in your GitLab CI/CD settings:
-
-```bash
-JIT_CLIENT_ID=your_client_id
-JIT_CLIENT_SECRET=your_client_secret
-```
-
-### 2. Team Metadata File
-
-Create a `team_metadata.json` file in your repository with the following structure:
+5. Update `team_metadata.json` file in the repository with the following structure:
 
 ```json
 {
@@ -42,31 +33,7 @@ Create a `team_metadata.json` file in your repository with the following structu
 }
 ```
 
-### 3. GitLab CI/CD Pipeline
-
-1. Copy the `.gitlab-ci.yml` file to your repository root
-2. The pipeline is configured to run:
-   - On schedule
-   - When manually triggered via web interface
-3. Copy the `gitlab_team_resource_manager.py` to `src/scripts/gitlab_team_resource_manager gitlab_team_resource_manager.py`
-4. Copy the `team_metadata.json` to `src/scripts/gitlab_team_resource_manager/team_metadata.json`
-
-
-### 4. GitLab CI/CD  `JIT_CLIENT_ID` and `JIT_CLIENT_SECRET`
-1. Navigate to Jit platform => Settings => User and Permissions => API Tokens => Generate Token
-2. Copy the `JIT_CLIENT_ID` and `JIT_CLIENT_SECRET`
-
-
-1. Add the environment variables in GitLab:
-   - Go to Settings > CI/CD > Variables
-   - Add `JIT_CLIENT_ID` and `JIT_CLIENT_SECRET`
-
-2. Configure pipeline schedule:
-   - Go to CI/CD > Schedules
-   - Create a new schedule
-   - Set desired frequency (e.g., daily, weekly)
-
-3. Monitor execution:
+### Monitor execution:
    - View pipeline status in CI/CD > Pipelines
    - Check job logs for detailed execution information
 
@@ -98,3 +65,9 @@ Create a `team_metadata.json` file in your repository with the following structu
 3. No Matching Resources:
    - Verify team_metadata.json structure
    - Ensure resource names match asset names
+
+
+The GitLab Team Resource Manager script:
+1. Fetches uncovered assets from JIT API
+2. Matches assets with team resources defined in metadata
+3. Updates coverage status for matching assets
