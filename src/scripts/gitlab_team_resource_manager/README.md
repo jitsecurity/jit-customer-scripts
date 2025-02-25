@@ -9,8 +9,25 @@ This tool manages team resources in GitLab by automatically updating asset cover
 - The script will update the coverage by the order of the team metadata file.
 
 ## Configuration
-1. Run git clone https://github.com/jitsecurity/jit-customer-scripts.git
-2. Navigate to [Jit platform](https://platform.jit.io/) => Settings => User and Permissions => API Tokens => Generate Token
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/jitsecurity/jit-customer-scripts.git
+   cd jit-customer-scripts
+   ```
+
+2. Push to your own GitLab registry:
+   ```bash
+   # Remove the original remote
+   git remote remove origin
+   
+   # Add your GitLab repository as the new remote
+   git remote add origin https://gitlab.com/your-organization/jit-customer-scripts.git
+   
+   # Push to your GitLab repository
+   git push -u origin main
+   ```
+
+3. Navigate to [Jit platform](https://platform.jit.io/) => Settings => User and Permissions => API Tokens => Generate Token
    ![image](https://github.com/user-attachments/assets/897cdc35-fb01-48b0-9ffa-6ed65f3b62de)
    ![image](https://github.com/user-attachments/assets/7ba48c2f-01dc-43fa-ad12-0d33bb8789eb)
 
