@@ -440,21 +440,21 @@ def main():
 
     # Initialize the asset manager
     manager = JitAssetManager(client_id, client_secret)
-    
+
     # Configure root logger to use the same format
     root_logger = logging.getLogger()
     # Remove any existing handlers
     if root_logger.handlers:
         for handler in root_logger.handlers:
             root_logger.removeHandler(handler)
-    
+
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(
         logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     )
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.INFO)
-    
+
     # Authenticate
     if not manager.authenticate():
         sys.exit(1)
@@ -600,7 +600,9 @@ def main():
         total_count = len(assets_to_update)
 
         # Log summary for each team
-        manager.logger.info("===== TEAM UPDATE SUMMARY =====")
+        manager.logger.info(
+            "================================================== TEAM UPDATE SUMMARY =================================================="
+        )
         for team_info in processed_teams:
             team_name = team_info["team"].name
             updated_count = team_info["count"]
