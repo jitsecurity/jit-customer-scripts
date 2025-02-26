@@ -1,10 +1,9 @@
 name: 'Enforce Ticket'
 on:
-  pull_request:
-     types: [opened, edited, reopened, synchronize]
+  push:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
