@@ -6,7 +6,7 @@ This tool manages team resources in GitLab by automatically updating asset cover
 
 - This script is designed to be run on a daily schedule.
 - The script will only update assets that are not currently covered by a team resource.
-- The script will update the coverage by the order of the team metadata file.
+- The script will update the coverage ordered alphabetically by the json file name.
 
 ## Configuration
 1. Clone the repository:
@@ -40,7 +40,7 @@ This tool manages team resources in GitLab by automatically updating asset cover
   ![image](https://github.com/user-attachments/assets/c5b25d63-d2be-44fc-a0bf-1f7089df4794)
 
 
-7. Update `team_metadata.json` file in the repository with the following structure:
+1. Copy you teams json files to the `src/scripts/gitlab_team_resource_manager` folder.
 
 ```json
 {
