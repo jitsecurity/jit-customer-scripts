@@ -6,7 +6,7 @@ This script allows automatically uncovering Jit Github repo assets that have a s
 
 To run the script, you'll need to prepare:
 
-- A Jit client & secret [tutorial](https://docs.jit.io/docs/managing-users#generating-api-tokens)
+- A Jit client & secret (can be generated from [tutorial](https://docs.jit.io/docs/managing-users#generating-api-tokens))
 - The name of your Github organization
 - The name of the Github topic
 - A valid Github token with read permissions to your organization

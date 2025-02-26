@@ -1,0 +1,18 @@
+{
+    "teams": [
+      {
+        "name": "Team Name",
+        "members": [
+          "member1",
+          "member2"
+        ],
+        "resources": [
+          {
+            "type": "repository",
+            "name": "repo-name",
+            "vendor": "gitlab"
+          }
+        ]
+      }
+    ]
+  }
