@@ -63,7 +63,8 @@ This tool manages team resources in GitLab by automatically updating asset cover
 ### Monitor execution:
    - View pipeline status in CI/CD > Pipelines
    - Check job logs for detailed execution information
-   - ![image](https://github.com/user-attachments/assets/ab502aee-116c-49f7-a906-e37b754a5b98)
+   - ![image](https://github.com/user-attachments/assets/7490f280-7716-4157-b2ad-9eaef7f4c68b)
+
 
 
 
