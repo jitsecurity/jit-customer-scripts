@@ -162,21 +162,21 @@ class JitAssetManager:
         """
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
-        
+
         # Remove any existing handlers to avoid duplicate logs
         if logger.handlers:
             for handler in logger.handlers:
                 logger.removeHandler(handler)
-                
+
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(
             logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
         )
         logger.addHandler(handler)
-        
+
         # Prevent propagation to the root logger to avoid duplicate logs
         logger.propagate = False
-        
+
         return logger
 
     def authenticate(self) -> bool:
@@ -383,7 +383,7 @@ def load_team_metadata_files(directory_path: str, logger=None) -> List[Team]:
         List[Team]: Combined list of all teams from all JSON files
     """
     all_teams = []
-    
+
     # Use provided logger or fall back to root logger
     log = logger or logging.getLogger()
 
