@@ -1,0 +1,12 @@
+name: 'Enforce Ticket'
+on:
+  pull_request:
+     types: [opened, edited, reopened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  enforce-ticket:
+    uses: jitsecurity/centralized-workflows/.github/workflows/enforce-ticket.yml@main
