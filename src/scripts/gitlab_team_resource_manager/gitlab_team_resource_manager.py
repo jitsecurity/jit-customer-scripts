@@ -601,7 +601,7 @@ def main():
 
         # Log summary for each team
         manager.logger.info(
-            "================================================== TEAM UPDATE SUMMARY =================================================="
+            "======================================== TEAM UPDATE SUMMARY ========================================"
         )
         for team_info in processed_teams:
             team_name = team_info["team"].name
