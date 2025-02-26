@@ -2,15 +2,16 @@
 GitLab Team Resource Manager
 
 This script manages team resources in GitLab by automatically updating asset
-coverage in the JIT platform. It processes team metadata to identify resources
-and updates their coverage status based on matching criteria.
+coverage in the JIT platform. It processes team metadata from multiple JSON
+files to identify resources and updates their coverage status based on
+matching criteria.
 
 Flow:
 1. Authenticates with JIT API
-2. Reads team metadata from JSON file
+2. Reads team metadata from all JSON files in the specified directory
 3. Fetches uncovered assets from JIT API
 4. Matches assets with team resources
-5. Updates coverage status for matching assets
+5. Updates coverage status for matching assets (up to 100 assets total)
 
 The script uses pagination to handle large numbers of assets and includes
 retry logic for API requests to handle temporary failures.
@@ -21,6 +22,7 @@ import json
 import requests
 import logging
 import sys
+import glob
 from typing import List, Dict
 from dataclasses import dataclass
 from requests.adapters import HTTPAdapter
@@ -31,6 +33,7 @@ MAX_RETRIES = 5
 RETRY_BACKOFF_FACTOR = 2
 ASSETS_PER_PAGE = 100
 JIT_API_ENDPOINT = "https://api.jit.io"
+MAX_ASSETS_TO_UPDATE = 100  # Limit to 100 assets total
 
 
 @dataclass
@@ -347,6 +350,42 @@ class JitAssetManager:
         return session.request(method, url, **kwargs)
 
 
+def load_team_metadata_files(directory_path: str) -> List[Team]:
+    """
+    Loads all team metadata JSON files from the specified directory.
+
+    Args:
+        directory_path: Path to directory containing team metadata JSON files
+
+    Returns:
+        List[Team]: Combined list of all teams from all JSON files
+    """
+    all_teams = []
+
+    # Get all JSON files in the directory
+    json_files = sorted(glob.glob(os.path.join(directory_path, "*.json")))
+
+    if not json_files:
+        return all_teams
+
+    for json_file in json_files:
+        try:
+            with open(json_file, "r") as f:
+                team_data = json.load(f)
+                team_metadata = TeamMetadata.from_dict(team_data)
+                all_teams.extend(team_metadata.teams)
+                file_name = os.path.basename(json_file)
+                logging.info(
+                    f"Loaded {len(team_metadata.teams)} teams from {file_name}"
+                )
+        except Exception as e:
+            logging.error(
+                f"Failed to read team metadata file {json_file}: {str(e)}"
+            )
+
+    return all_teams
+
+
 def main():
     """
     Main execution function for the GitLab Team Resource Manager.
@@ -355,11 +394,10 @@ def main():
     1. Validates environment variables and configuration
     2. Initializes JIT Asset Manager
     3. Authenticates with JIT API
-    4. Reads and parses team metadata
+    4. Reads and parses team metadata from all JSON files in the directory
     5. Fetches uncovered assets
-    6. Finds first team with matching resources
-    7. Updates coverage for matching assets (up to 100 assets)
-    8. Excludes archived assets
+    6. Processes teams in order, updating up to 100 assets total
+    7. Excludes archived assets
 
     Exit codes:
         0: Success or no action needed
@@ -369,11 +407,10 @@ def main():
     client_id = os.getenv("JIT_CLIENT_ID")
     client_secret = os.getenv("JIT_CLIENT_SECRET")
     metadata_path = "src/scripts/gitlab_team_resource_manager"
-    team_metadata_file = f"{metadata_path}/team_metadata.json"
 
-    if not all([client_id, client_secret, team_metadata_file]):
+    if not all([client_id, client_secret]):
         print("Error: Missing required environment variables")
-        print("Required: JIT_CLIENT_ID, JIT_CLIENT_SECRET, TEAM_METADATA_FILE")
+        print("Required: JIT_CLIENT_ID, JIT_CLIENT_SECRET")
         sys.exit(1)
 
     # Initialize the asset manager
@@ -383,18 +420,14 @@ def main():
     if not manager.authenticate():
         sys.exit(1)
 
-    # Read team metadata
-    try:
-        with open(team_metadata_file, "r") as f:
-            team_data = json.load(f)
-            team_metadata = TeamMetadata.from_dict(team_data)
-    except Exception as e:
-        manager.logger.error("Failed to read team metadata file: %s", str(e))
-        sys.exit(1)
+    # Load all team metadata files
+    teams = load_team_metadata_files(metadata_path)
 
-    if not team_metadata.teams:
-        manager.logger.info("No teams found in metadata")
+    if not teams:
+        manager.logger.info("No teams found in metadata files")
         sys.exit(0)
+
+    manager.logger.info(f"Loaded {len(teams)} teams from all metadata files")
 
     # Get all assets first
     assets = manager.get_all_assets()
@@ -420,11 +453,14 @@ def main():
     asset_names = [asset.get("asset_name", "") for asset in assets]
     manager.logger.info("Found %d active assets", len(asset_names))
 
-    # Process teams until we reach 120 assets or run out of teams
+    # Process teams until we reach MAX_ASSETS_TO_UPDATE assets or run out of
+    # teams
     assets_to_update = []
     processed_teams = []
+    # Track processed asset IDs to avoid duplicates
+    processed_asset_ids = set()
 
-    for team in team_metadata.teams:
+    for team in teams:
         if not team.resources:
             continue
 
@@ -442,59 +478,71 @@ def main():
             "Found team with matching resources: %s", team.name
         )
         manager.logger.info(
-            "Matching resources: %s", matching_resources
+            "Matching resources: %d/%d",
+            len(matching_resources),
+            len(resource_names)
         )
 
-        # Get all assets for this team before deciding to process
+        # Get all assets for this team that haven't been processed yet
         team_assets = []
         for asset in assets:
-            if asset.get("asset_name") in resource_names:
+            asset_id = asset.get("asset_id")
+            if (asset.get("asset_name") in resource_names and
+                    asset_id not in processed_asset_ids):
                 team_assets.append({
-                    "asset_id": asset["asset_id"],
+                    "asset_id": asset_id,
                     "is_covered": True,
                     "tags": []
                 })
+                processed_asset_ids.add(asset_id)
 
-        # Check if adding this team would exceed our 120 asset limit
-        if len(assets_to_update) + len(team_assets) > 120:
-            manager.logger.info(
-                "Skipping team '%s' - would exceed 120 asset limit",
-                team.name
-            )
-            # If this is the first team and it has more than 120 assets,
-            # we need to process it anyway (up to 120)
-            if not assets_to_update:
+                # Break if we've reached our limit
+                if (len(assets_to_update) + len(team_assets) >=
+                        MAX_ASSETS_TO_UPDATE):
+                    manager.logger.info(
+                        f"Reached limit of {MAX_ASSETS_TO_UPDATE} "
+                        f"assets to update"
+                    )
+                    break
+
+        # If we found assets to update for this team
+        if team_assets:
+            # Check if adding all team assets would exceed our limit
+            assets_to_add = team_assets
+            if len(assets_to_update) + len(team_assets) > MAX_ASSETS_TO_UPDATE:
+                # Only add up to the limit
+                remaining_slots = MAX_ASSETS_TO_UPDATE - len(assets_to_update)
+                assets_to_add = team_assets[:remaining_slots]
                 manager.logger.info(
-                    "Processing first 120 assets for team '%s'",
-                    team.name
+                    f"Partially processing team '{team.name}' - "
+                    f"adding {len(assets_to_add)} of {len(team_assets)} assets"
                 )
-                assets_to_update = team_assets[:120]
-                processed_teams.append({
-                    "team": team,
-                    "count": len(assets_to_update)
-                })
+            else:
+                manager.logger.info(
+                    f"Processing all {len(team_assets)} assets for team "
+                    f"'{team.name}'"
+                )
+
+            # Add this team's assets to our update list
+            assets_to_update.extend(assets_to_add)
+            processed_teams.append({
+                "team": team,
+                "count": len(assets_to_add)
+            })
+
+            manager.logger.info(
+                "Added %d assets from team '%s', total: %d",
+                len(assets_to_add),
+                team.name,
+                len(assets_to_update)
+            )
+
+            # If we've reached our limit, stop processing teams
+            if len(assets_to_update) >= MAX_ASSETS_TO_UPDATE:
+                manager.logger.info(
+                    f"Reached limit of {MAX_ASSETS_TO_UPDATE} assets to update"
+                )
                 break
-            # Otherwise, we've already processed some teams, so we're done
-            continue
-
-        # Add this team's assets to our update list
-        assets_to_update.extend(team_assets)
-        processed_teams.append({
-            "team": team,
-            "count": len(team_assets)
-        })
-
-        manager.logger.info(
-            "Added %d assets from team '%s', total: %d",
-            len(team_assets),
-            team.name,
-            len(assets_to_update)
-        )
-
-        # If we've reached our limit, stop processing teams
-        if len(assets_to_update) >= 120:
-            manager.logger.info("Reached limit of 120 assets to update")
-            break
 
     # Update the assets if we have any
     if assets_to_update:
