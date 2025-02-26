@@ -28,6 +28,17 @@ from dataclasses import dataclass
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+# Configure basic logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+# Disable logging from the requests library
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
 # Constants
 MAX_RETRIES = 5
 RETRY_BACKOFF_FACTOR = 2
@@ -151,11 +162,21 @@ class JitAssetManager:
         """
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
+        
+        # Remove any existing handlers to avoid duplicate logs
+        if logger.handlers:
+            for handler in logger.handlers:
+                logger.removeHandler(handler)
+                
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(
             logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
         )
         logger.addHandler(handler)
+        
+        # Prevent propagation to the root logger to avoid duplicate logs
+        logger.propagate = False
+        
         return logger
 
     def authenticate(self) -> bool:
@@ -350,17 +371,21 @@ class JitAssetManager:
         return session.request(method, url, **kwargs)
 
 
-def load_team_metadata_files(directory_path: str) -> List[Team]:
+def load_team_metadata_files(directory_path: str, logger=None) -> List[Team]:
     """
     Loads all team metadata JSON files from the specified directory.
 
     Args:
         directory_path: Path to directory containing team metadata JSON files
+        logger: Logger instance to use for logging (optional)
 
     Returns:
         List[Team]: Combined list of all teams from all JSON files
     """
     all_teams = []
+    
+    # Use provided logger or fall back to root logger
+    log = logger or logging.getLogger()
 
     # Get all JSON files in the directory
     json_files = sorted(glob.glob(os.path.join(directory_path, "*.json")))
@@ -375,11 +400,11 @@ def load_team_metadata_files(directory_path: str) -> List[Team]:
                 team_metadata = TeamMetadata.from_dict(team_data)
                 all_teams.extend(team_metadata.teams)
                 file_name = os.path.basename(json_file)
-                logging.info(
+                log.info(
                     f"Loaded {len(team_metadata.teams)} teams from {file_name}"
                 )
         except Exception as e:
-            logging.error(
+            log.error(
                 f"Failed to read team metadata file {json_file}: {str(e)}"
             )
 
@@ -415,13 +440,27 @@ def main():
 
     # Initialize the asset manager
     manager = JitAssetManager(client_id, client_secret)
-
+    
+    # Configure root logger to use the same format
+    root_logger = logging.getLogger()
+    # Remove any existing handlers
+    if root_logger.handlers:
+        for handler in root_logger.handlers:
+            root_logger.removeHandler(handler)
+    
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    )
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.INFO)
+    
     # Authenticate
     if not manager.authenticate():
         sys.exit(1)
 
     # Load all team metadata files
-    teams = load_team_metadata_files(metadata_path)
+    teams = load_team_metadata_files(metadata_path, manager.logger)
 
     if not teams:
         manager.logger.info("No teams found in metadata files")
