@@ -459,6 +459,8 @@ def main():
     processed_teams = []
     # Track processed asset IDs to avoid duplicates
     processed_asset_ids = set()
+    # Track total assets per team for reporting
+    team_asset_counts = {}
 
     for team in teams:
         if not team.resources:
@@ -485,25 +487,34 @@ def main():
 
         # Get all assets for this team that haven't been processed yet
         team_assets = []
-        for asset in assets:
-            asset_id = asset.get("asset_id")
-            if (asset.get("asset_name") in resource_names and
-                    asset_id not in processed_asset_ids):
-                team_assets.append({
-                    "asset_id": asset_id,
-                    "is_covered": True,
-                    "tags": []
-                })
-                processed_asset_ids.add(asset_id)
+        # Count total assets related to this team
+        total_team_assets = 0
 
-                # Break if we've reached our limit
-                if (len(assets_to_update) + len(team_assets) >=
-                        MAX_ASSETS_TO_UPDATE):
-                    manager.logger.info(
-                        f"Reached limit of {MAX_ASSETS_TO_UPDATE} "
-                        f"assets to update"
-                    )
-                    break
+        for asset in assets:
+            asset_name = asset.get("asset_name", "")
+            if asset_name in resource_names:
+                total_team_assets += 1
+
+                asset_id = asset.get("asset_id")
+                if asset_id not in processed_asset_ids:
+                    team_assets.append({
+                        "asset_id": asset_id,
+                        "is_covered": True,
+                        "tags": []
+                    })
+                    processed_asset_ids.add(asset_id)
+
+                    # Break if we've reached our limit
+                    if (len(assets_to_update) + len(team_assets) >=
+                            MAX_ASSETS_TO_UPDATE):
+                        manager.logger.info(
+                            f"Reached limit of {MAX_ASSETS_TO_UPDATE} "
+                            f"assets to update"
+                        )
+                        break
+
+        # Store the total assets count for this team
+        team_asset_counts[team.name] = total_team_assets
 
         # If we found assets to update for this team
         if team_assets:
@@ -527,7 +538,8 @@ def main():
             assets_to_update.extend(assets_to_add)
             processed_teams.append({
                 "team": team,
-                "count": len(assets_to_add)
+                "count": len(assets_to_add),
+                "total": total_team_assets
             })
 
             manager.logger.info(
@@ -551,10 +563,18 @@ def main():
         # Log summary for each team
         manager.logger.info("===== TEAM UPDATE SUMMARY =====")
         for team_info in processed_teams:
+            team_name = team_info["team"].name
+            updated_count = team_info["count"]
+            total_count_team = team_info["total"]
+            percentage = 0
+            if total_count_team > 0:
+                percentage = updated_count / total_count_team * 100
             manager.logger.info(
-                "Team '%s': %d assets",
-                team_info["team"].name,
-                team_info["count"]
+                "Team '%s': %d/%d assets (%.1f%%)",
+                team_name,
+                updated_count,
+                total_count_team,
+                percentage
             )
         manager.logger.info(
             "Total assets to update: %d",
@@ -570,10 +590,18 @@ def main():
                 total_count
             )
             for team_info in processed_teams:
+                team_name = team_info["team"].name
+                updated_count = team_info["count"]
+                total_count_team = team_info["total"]
+                percentage = 0
+                if total_count_team > 0:
+                    percentage = updated_count / total_count_team * 100
                 manager.logger.info(
-                    "- Team '%s': %d assets",
-                    team_info["team"].name,
-                    team_info["count"]
+                    "- Team '%s': %d/%d assets (%.1f%%)",
+                    team_name,
+                    updated_count,
+                    total_count_team,
+                    percentage
                 )
         else:
             manager.logger.error(
