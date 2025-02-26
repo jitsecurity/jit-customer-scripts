@@ -36,7 +36,7 @@ This tool manages team resources in GitLab by automatically updating asset cover
 5. Add the environment variables in GitLab:
     - Go to Project > Build > Pipeline Schedules > New schedule
     - Select Description, Timezone, Interval Pattern: everyday, branch: main, Variables: JIT_CLIENT_ID and JIT_CLIENT_SECRET
-    - Click on Create pipeline schedule
+    - Click on Create pipeline schedule make sure cron set to 0 12 * * *
   ![image](https://github.com/user-attachments/assets/c5b25d63-d2be-44fc-a0bf-1f7089df4794)
 
 
