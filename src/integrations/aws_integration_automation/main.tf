@@ -1,3 +1,16 @@
+# Configure the REST API provider with global headers
+provider "restapi" {
+  uri                   = local.jit_api_endpoint
+  write_returns_object  = true
+  create_returns_object = true
+  
+  headers = {
+    "Accept"        = "application/json"
+    "Content-Type"  = "application/json"
+    "Authorization" = "Bearer ${jsondecode(data.http.jit_auth.response_body).accessToken}"
+  }
+}
+
 # Authentication with JIT API to get access token
 data "http" "jit_auth" {
   url    = "${local.jit_api_endpoint}/authentication/login"
@@ -21,44 +34,20 @@ data "http" "jit_auth" {
   }
 }
 
-# Create state token using shell script resource
-resource "shell_script" "jit_state_token" {
-  triggers = {
-    client_id        = var.jit_client_id
-    integration_type = var.integration_type
-    regions          = join(",", var.aws_regions_to_monitor)
-    org_root_id      = var.organization_root_id
-  }
+# Create state token using REST API provider
+resource "restapi_object" "jit_state_token" {
+  path            = "/oauth/state-token"
+  create_method   = "POST"
+  read_path       = "/oauth/state-token/{id}/echo"
+  id_attribute    = "id"
+  ignore_changes_to = ["token"]
+  # Request body with state token parameters
+  data = jsonencode(local.state_token_request_body)
   
-  environment = {
-    JIT_API_ENDPOINT      = local.jit_api_endpoint
-    STATE_TOKEN_BODY      = jsonencode(local.state_token_request_body)
-  }
-
-  sensitive_environment = {
-    JIT_AUTH_RESPONSE = data.http.jit_auth.response_body
-  }
-  
-  lifecycle_commands {
-    create = <<-EOT
-      ACCESS_TOKEN=$(echo "$JIT_AUTH_RESPONSE" | jq -r '.accessToken')
-      TOKEN=$(curl -s -X POST "$JIT_API_ENDPOINT/oauth/state-token" \
-        -H "Authorization: Bearer $ACCESS_TOKEN" \
-        -H "Accept: application/json" \
-        -H "Content-Type: application/json" \
-        -d "$STATE_TOKEN_BODY" \
-        | jq -r '.token')
-      echo "{\"token\": \"$TOKEN\"}"
-    EOT
-    
-    delete = "echo 'State token cleanup - no action needed'"
-  }
-  
+  # Ignore changes to data since read endpoint returns different structure
   lifecycle {
-    ignore_changes = [environment, sensitive_environment]
+    ignore_changes = [data]
   }
-  
-  interpreter = ["/bin/bash", "-c"]
   
   depends_on = [data.http.jit_auth]
 }
@@ -71,12 +60,12 @@ resource "aws_cloudformation_stack" "jit_integration_account" {
   template_url  = local.cloudformation_template_url
   capabilities  = var.capabilities
   
-  parameters = {
-    "ExternalId"                = shell_script.jit_state_token.output["token"]
-    "ResourceNamePrefix"        = local.resource_name_prefix
-    "AccountName"               = var.account_name
-    "ShouldIncludeRootAccount"  = tostring(var.should_include_root_account)
-  }
+     parameters = {
+     "ExternalId"                = jsondecode(restapi_object.jit_state_token.create_response)["token"]
+     "ResourceNamePrefix"        = local.resource_name_prefix
+     "AccountName"               = var.account_name
+     "ShouldIncludeRootAccount"  = tostring(var.should_include_root_account)
+   }
   
   lifecycle {
     prevent_destroy = true
@@ -84,7 +73,7 @@ resource "aws_cloudformation_stack" "jit_integration_account" {
   
   depends_on = [
     data.http.jit_auth,
-    shell_script.jit_state_token
+    restapi_object.jit_state_token
   ]
 }
 
@@ -96,12 +85,12 @@ resource "aws_cloudformation_stack_set" "jit_integration_org" {
   template_url  = local.cloudformation_template_url
   capabilities  = var.capabilities
   
-  parameters = {
-    "ExternalId"                = shell_script.jit_state_token.output["token"]
-    "ResourceNamePrefix"        = local.resource_name_prefix
-    "OrganizationRootId"        = var.organization_root_id
-    "ShouldIncludeRootAccount" = tostring(var.should_include_root_account)
-  }
+     parameters = {
+     "ExternalId"                = jsondecode(restapi_object.jit_state_token.create_response)["token"]
+     "ResourceNamePrefix"        = local.resource_name_prefix
+     "OrganizationRootId"        = var.organization_root_id
+     "ShouldIncludeRootAccount" = tostring(var.should_include_root_account)
+   }
   
   # Auto deployment configuration for organization
   auto_deployment {
@@ -118,7 +107,7 @@ resource "aws_cloudformation_stack_set" "jit_integration_org" {
   
   depends_on = [
     data.http.jit_auth,
-    shell_script.jit_state_token
+    restapi_object.jit_state_token
   ]
 }
 
