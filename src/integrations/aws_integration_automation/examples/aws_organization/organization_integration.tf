@@ -39,5 +39,5 @@ module "jit_aws_org_integration" {
   resource_name_prefix = "JitOrg"                # Optional: Prefix for CloudFormation resources
   
   # CloudFormation Configuration
-  capabilities = ["CAPABILITY_NAMED_IAM"]
+  capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
 }

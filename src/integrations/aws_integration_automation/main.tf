@@ -77,8 +77,8 @@ resource "aws_cloudformation_stack" "jit_integration_account" {
   ]
 }
 
-# CloudFormation StackSet for organization integration
-resource "aws_cloudformation_stack_set" "jit_integration_org" {
+# CloudFormation Stack for organization integration
+resource "aws_cloudformation_stack" "jit_integration_org" {
   count = var.integration_type == "org" ? 1 : 0
   
   name          = var.stack_name
@@ -92,15 +92,6 @@ resource "aws_cloudformation_stack_set" "jit_integration_org" {
      "ShouldIncludeRootAccount" = tostring(var.should_include_root_account)
    }
   
-  # Auto deployment configuration for organization
-  auto_deployment {
-    enabled                          = true
-    retain_stacks_on_account_removal = false
-  }
-  
-  # Permission model for organization deployment
-  permission_model = "SERVICE_MANAGED"
-  
   lifecycle {
     prevent_destroy = true
   }
@@ -111,20 +102,4 @@ resource "aws_cloudformation_stack_set" "jit_integration_org" {
   ]
 }
 
-# StackSet instances for organization integration (deploys to all accounts in org)
-resource "aws_cloudformation_stack_set_instance" "jit_integration_org_instance" {
-  count = var.integration_type == "org" ? 1 : 0
-  
-  stack_set_name         = aws_cloudformation_stack_set.jit_integration_org[0].name
-  deployment_targets {
-    organizational_unit_ids = [var.organization_root_id]
-  }
-  
-  operation_preferences {
-    region_concurrency_type = "PARALLEL"
-    max_concurrent_percentage = 100
-    failure_tolerance_percentage = 10
-  }
-  
-  depends_on = [aws_cloudformation_stack_set.jit_integration_org]
-}
+
