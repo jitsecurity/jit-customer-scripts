@@ -27,11 +27,15 @@ variable "should_include_root_account" {
 variable "regions_to_monitor" {
   description = "AWS regions to monitor using Jit"
   type        = list(string)
-  default     = ["us-east-1", "us-west-2"]
 }
 
 variable "aws_region" {
   description = "AWS region to deploy the integration to"
   type        = string
-  default     = "us-east-1"
+}
+
+variable "resource_name_prefix" {
+  description = "Prefix for the resource name"
+  type        = string
+  default     = "JitOrg"
 }

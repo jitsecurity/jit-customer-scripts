@@ -15,19 +15,16 @@ variable "jit_secret" {
 variable "regions_to_monitor" {
   description = "AWS regions to monitor using Jit"
   type        = list(string)
-  default     = ["us-east-1", "us-west-2"]
 }
 
 variable "aws_region" {
   description = "AWS region to deploy the integration to"
   type        = string
-  default     = "us-east-1"
 }
 
 variable "account_name" {
   description = "Name of the account to monitor"
   type        = string
-  default     = "Production Account"
 }
 
 variable "resource_name_prefix" {

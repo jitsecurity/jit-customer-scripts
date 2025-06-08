@@ -36,7 +36,7 @@ module "jit_aws_org_integration" {
   
   # Stack Configuration
   stack_name            = "JitOrgIntegration"
-  resource_name_prefix = "JitOrg"                # Optional: Prefix for CloudFormation resources
+  resource_name_prefix = var.resource_name_prefix                # Optional: Prefix for CloudFormation resources
   
   # CloudFormation Configuration
   capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
