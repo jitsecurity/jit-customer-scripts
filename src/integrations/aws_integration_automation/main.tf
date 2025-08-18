@@ -1,39 +1,3 @@
-# Configure the REST API provider with global headers
-provider "restapi" {
-  uri                   = local.jit_api_endpoint
-  write_returns_object  = true
-  create_returns_object = true
-  
-  headers = {
-    "Accept"        = "application/json"
-    "Content-Type"  = "application/json"
-    "Authorization" = "Bearer ${jsondecode(data.http.jit_auth.response_body).accessToken}"
-  }
-}
-
-# Authentication with JIT API to get access token
-data "http" "jit_auth" {
-  url    = "${local.jit_api_endpoint}/authentication/login"
-  method = "POST"
-  
-  request_headers = {
-    "Accept"       = "application/json"
-    "Content-Type" = "application/json"
-  }
-  
-  request_body = jsonencode({
-    clientId = var.jit_client_id
-    secret   = var.jit_secret
-  })
-  
-  lifecycle {
-    postcondition {
-      condition     = self.status_code == 200
-      error_message = "JIT authentication failed with status ${self.status_code}"
-    }
-  }
-}
-
 # Create state token using REST API provider
 resource "restapi_object" "jit_state_token" {
   path            = "/oauth/state-token"

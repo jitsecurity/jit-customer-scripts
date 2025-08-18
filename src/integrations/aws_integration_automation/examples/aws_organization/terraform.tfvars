@@ -1,6 +1,7 @@
 # JIT API Credentials
 # Follow the guide here - https://docs.jit.io/reference/credentials
 # Create creds using "Engineering Manager" role
+# Never commit these values to the repository, Supply them in a secured way.
 jit_client_id = "JIT_API_KEY_CLIENT_ID"
 jit_secret    = "JIT_API_KEY_SECRET" 
 

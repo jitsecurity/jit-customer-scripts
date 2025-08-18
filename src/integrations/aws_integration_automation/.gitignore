@@ -1,0 +1,36 @@
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Terraform plan files
+*.tfplan
+*.tfplan.*
+
+# Environment variables
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# JIT state token file (contains sensitive data)
+.jit_state_token
+
+# Backup files
+*.backup
+*.bak
+
+# Log files
+*.log 
