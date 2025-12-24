@@ -31,23 +31,23 @@ Deploys JIT integration across an entire AWS Organization using a CloudFormation
 ```hcl
 module "jit_aws_account_integration" {
   source = "path/to/aws_integration_automation"
-  
+
   # JIT Configuration
   jit_client_id = var.jit_client_id
   jit_secret    = var.jit_secret
   jit_region    = "us"  # Use "eu" for European API endpoint
-  
+
   # Integration Type
   integration_type = "account"
-  
+
   # AWS Configuration
   aws_regions_to_monitor = ["us-east-1", "us-west-2"]
-  
+
   # Stack Configuration
   stack_name            = "JitAccountIntegration"
   account_name         = "Production Account"
   resource_name_prefix = "JitProd"
-  
+
   # CloudFormation Configuration
   capabilities = ["CAPABILITY_NAMED_IAM"]
 }
@@ -58,26 +58,26 @@ module "jit_aws_account_integration" {
 ```hcl
 module "jit_aws_org_integration" {
   source = "path/to/aws_integration_automation"
-  
+
   # JIT Configuration
   jit_client_id = var.jit_client_id
   jit_secret    = var.jit_secret
   jit_region    = "us"  # Use "eu" for European API endpoint
-  
+
   # Integration Type
   integration_type = "org"
-  
+
   # Organization Configuration
   organization_root_id        = "r-xxxxxxxxxxxx"
   should_include_root_account = true
-  
+
   # AWS Configuration
   aws_regions_to_monitor = ["us-east-1", "us-west-2", "eu-west-1"]
-  
+
   # Stack Configuration
   stack_name            = "JitOrgIntegration"
   resource_name_prefix = "JitOrg"
-  
+
   # CloudFormation Configuration
   capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
 }
@@ -194,7 +194,7 @@ terraform plan
 terraform apply
 ```
 
-### Organization Integration  
+### Organization Integration
 - **Directory**: [`examples/aws_organization/`](examples/aws_organization/)
 - **Main File**: `organization_integration.tf`
 - **Variables**: `variables.tf`
@@ -282,4 +282,4 @@ terraform apply
 
 ## License
 
-This module is part of the JIT customer scripts repository. Please refer to the main repository license for usage terms. 
+This module is part of the JIT customer scripts repository. Please refer to the main repository license for usage terms.

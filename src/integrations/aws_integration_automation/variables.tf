@@ -53,8 +53,8 @@ variable "resource_name_prefix" {
   default     = null
   validation {
     condition = var.resource_name_prefix == null || (
-      length(var.resource_name_prefix) >= 1 && 
-      length(var.resource_name_prefix) <= 40 && 
+      length(var.resource_name_prefix) >= 1 &&
+      length(var.resource_name_prefix) <= 40 &&
       can(regex("^[a-zA-Z0-9-_]*$", var.resource_name_prefix))
     )
     error_message = "The resource_name_prefix must be 1-40 characters and contain only alphanumeric characters, hyphens, and underscores."
@@ -81,4 +81,4 @@ variable "capabilities" {
   description = "CloudFormation capabilities required for stack creation"
   type        = list(string)
   default     = ["CAPABILITY_NAMED_IAM"]
-} 
+}
